@@ -1,0 +1,13 @@
+streamlit
+firebase
+firebase-admin
+google-auth
+google-auth-oauthlib
+langchain
+langchain-openai
+langchain_community
+openai
+python-dotenv
+pytest
+PyJWT>=2.0
+git+https://github.com/amit-sw/aiclub_google_auth.git
