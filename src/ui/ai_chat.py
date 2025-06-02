@@ -15,8 +15,8 @@ def render_ai_chat():
     """Render AI chat interface."""
     st.header("AI Assistant")
     
-    # Get current user ID
-    user_id = st.session_state.user.get('id')
+    # Get current user ID (using email as the user identifier)
+    user_id = st.session_state.user.get('email')
     
     # Initialize chat state if not exists
     if 'ai_input' not in st.session_state:
@@ -28,10 +28,7 @@ def render_ai_chat():
     
     # Display information about the AI assistant
     st.markdown("""
-    Ask the AI assistant for help with your tasks. You can ask questions like:
-    - How can I prioritize my tasks effectively?
-    - What are some productivity techniques for completing tasks?
-    - How can I manage my time better?
+    Talk with the AI assistant for help creating and/or updating your tasks. 
     """)
     
     # Input form
@@ -39,9 +36,8 @@ def render_ai_chat():
         # Text input
         ai_input = st.text_area("Your question", value=st.session_state.ai_input, height=100)
         
-        # Submit button (disabled if input is empty)
-        submit_disabled = not ai_input.strip()
-        submit_button = st.form_submit_button("Submit", disabled=submit_disabled)
+        # Submit button - always enabled, we'll check content later
+        submit_button = st.form_submit_button("Submit")
     
     # Handle form submission
     if submit_button and ai_input.strip():
@@ -54,7 +50,9 @@ def render_ai_chat():
         try:
             # Process chat with OpenAI
             with st.spinner("Processing your question..."):
-                result = openai_service.process_chat(user_id, ai_input)
+                # Append user_id to the input for the OpenAI service to extract
+                ai_input_with_id = f"{ai_input}\n\nuser_id: {user_id}"
+                result = openai_service.process_chat(user_id, ai_input_with_id)
                 
                 # Store response in session state
                 st.session_state.ai_response = result.get('response')

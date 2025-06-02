@@ -57,14 +57,30 @@ class FirestoreClient:
                 'client_x509_cert_url': client_x509_cert_url
             })
             
+            # Get database name from environment variables
+            database_name = os.environ.get('FIREBASE_DATABASE_NAME')
+            
             # Check if Firebase app is already initialized
             if not firebase_admin._apps:
-                firebase_admin.initialize_app(cred)
+                # If database name is specified, use it for initialization
+                if database_name:
+                    firebase_admin.initialize_app(cred, {
+                        'databaseURL': f'https://{project_id}.firebaseio.com',
+                        'projectId': project_id,
+                        'storageBucket': f'{project_id}.appspot.com',
+                    })
+                else:
+                    firebase_admin.initialize_app(cred)
             
-            # Initialize Firestore client
-            self.db = firestore.client()
+            # Initialize Firestore client with the specified database
+            if database_name:
+                self.db = firestore.client(database_id=database_name)
+                logger.info(f"Firestore client initialized with database: {database_name}")
+            else:
+                self.db = firestore.client()
+                logger.info("Firestore client initialized with default database")
+                
             self._initialized = True
-            logger.info("Firestore client initialized successfully")
             
         except Exception as e:
             logger.error(f"Failed to initialize Firestore client: {str(e)}")
@@ -82,6 +98,9 @@ class FirestoreClient:
             Document ID of the created document
         """
         try:
+            # Log the request
+            logger.debug(f"DB REQUEST [CREATE] - Collection: {collection} - Data: {json.dumps(self._prepare_data_for_logging(data))}")
+            
             # Add server timestamp for createdAt and updatedAt if not provided
             if 'createdAt' not in data:
                 data['createdAt'] = SERVER_TIMESTAMP
@@ -91,10 +110,13 @@ class FirestoreClient:
             # Add document to collection
             doc_ref = self.db.collection(collection).document()
             doc_ref.set(data)
-            logger.info(f"Document created in {collection} with ID: {doc_ref.id}")
+            
+            # Log the response
+            logger.info(f"DB RESPONSE [CREATE] - Collection: {collection} - Document ID: {doc_ref.id}")
             return doc_ref.id
         except Exception as e:
-            logger.error(f"Error creating document in {collection}: {str(e)}")
+            # Log the error
+            logger.error(f"DB ERROR [CREATE] - Collection: {collection} - Error: {str(e)}")
             raise
     
     def read(self, collection: str, doc_id: str) -> Optional[Dict[str, Any]]:
@@ -109,18 +131,28 @@ class FirestoreClient:
             Document data or None if not found
         """
         try:
+            # Log the request
+            logger.debug(f"DB REQUEST [READ] - Collection: {collection} - Document ID: {doc_id}")
+            
             doc_ref = self.db.collection(collection).document(doc_id)
             doc = doc_ref.get()
             
             if doc.exists:
                 data = doc.to_dict()
                 data['id'] = doc.id
+                
+                # Log the response
+                logger.info(f"DB RESPONSE [READ] - Collection: {collection} - Document ID: {doc_id} - Found")
+                logger.debug(f"DB RESPONSE DATA [READ] - {json.dumps(self._prepare_data_for_logging(data))}")
+                
                 return data
             else:
-                logger.warning(f"Document {doc_id} not found in {collection}")
+                # Log the not found response
+                logger.warning(f"DB RESPONSE [READ] - Collection: {collection} - Document ID: {doc_id} - Not Found")
                 return None
         except Exception as e:
-            logger.error(f"Error reading document {doc_id} from {collection}: {str(e)}")
+            # Log the error
+            logger.error(f"DB ERROR [READ] - Collection: {collection} - Document ID: {doc_id} - Error: {str(e)}")
             raise
     
     def update(self, collection: str, doc_id: str, data: Dict[str, Any]) -> bool:
@@ -136,15 +168,21 @@ class FirestoreClient:
             True if update was successful, False otherwise
         """
         try:
+            # Log the request
+            logger.debug(f"DB REQUEST [UPDATE] - Collection: {collection} - Document ID: {doc_id} - Data: {json.dumps(self._prepare_data_for_logging(data))}")
+            
             # Add server timestamp for updatedAt
             data['updatedAt'] = SERVER_TIMESTAMP
             
             doc_ref = self.db.collection(collection).document(doc_id)
             doc_ref.update(data)
-            logger.info(f"Document {doc_id} updated in {collection}")
+            
+            # Log the response
+            logger.info(f"DB RESPONSE [UPDATE] - Collection: {collection} - Document ID: {doc_id} - Success")
             return True
         except Exception as e:
-            logger.error(f"Error updating document {doc_id} in {collection}: {str(e)}")
+            # Log the error
+            logger.error(f"DB ERROR [UPDATE] - Collection: {collection} - Document ID: {doc_id} - Error: {str(e)}")
             raise
     
     def delete(self, collection: str, doc_id: str) -> bool:
@@ -159,12 +197,18 @@ class FirestoreClient:
             True if deletion was successful, False otherwise
         """
         try:
+            # Log the request
+            logger.debug(f"DB REQUEST [DELETE] - Collection: {collection} - Document ID: {doc_id}")
+            
             doc_ref = self.db.collection(collection).document(doc_id)
             doc_ref.delete()
-            logger.info(f"Document {doc_id} deleted from {collection}")
+            
+            # Log the response
+            logger.info(f"DB RESPONSE [DELETE] - Collection: {collection} - Document ID: {doc_id} - Success")
             return True
         except Exception as e:
-            logger.error(f"Error deleting document {doc_id} from {collection}: {str(e)}")
+            # Log the error
+            logger.error(f"DB ERROR [DELETE] - Collection: {collection} - Document ID: {doc_id} - Error: {str(e)}")
             raise
     
     def query(self, collection: str, filters: List[tuple] = None, order_by: str = None, 
@@ -183,6 +227,11 @@ class FirestoreClient:
             List of document data
         """
         try:
+            # Log the request
+            filter_str = ", ".join([f"{f[0]} {f[1]} {f[2]}" for f in filters]) if filters else "None"
+            limit_str = str(limit) if limit else "None"
+            logger.debug(f"DB REQUEST [QUERY] - Collection: {collection} - Filters: {filter_str} - OrderBy: {order_by} - Direction: {direction} - Limit: {limit_str}")
+            
             # Start with collection reference
             query_ref = self.db.collection(collection)
             
@@ -210,11 +259,59 @@ class FirestoreClient:
                 data['id'] = doc.id
                 results.append(data)
             
-            logger.info(f"Query executed on {collection}, returned {len(results)} documents")
+            # Log the response
+            logger.info(f"DB RESPONSE [QUERY] - Collection: {collection} - Results: {len(results)} documents")
+            if results and len(results) <= 10:  # Only log detailed results if there are 10 or fewer
+                logger.debug(f"DB RESPONSE DATA [QUERY] - First 10 document IDs: {[doc.get('id', 'unknown') for doc in results[:10]]}")
+            
             return results
         except Exception as e:
-            logger.error(f"Error querying documents from {collection}: {str(e)}")
+            # Log the error
+            logger.error(f"DB ERROR [QUERY] - Collection: {collection} - Error: {str(e)}")
             raise
+
+    def _prepare_data_for_logging(self, data: Dict[str, Any]) -> Dict[str, Any]:
+        """
+        Prepare data for logging by handling non-serializable types.
+        
+        Args:
+            data: Data to prepare for logging
+            
+        Returns:
+            Prepared data safe for logging
+        """
+        if not data:
+            return {}
+            
+        # Create a copy to avoid modifying the original data
+        log_data = {}
+        
+        for key, value in data.items():
+            # Handle SERVER_TIMESTAMP
+            if value == SERVER_TIMESTAMP:
+                log_data[key] = "<SERVER_TIMESTAMP>"
+            # Handle datetime objects
+            elif isinstance(value, datetime):
+                log_data[key] = value.isoformat()
+            # Handle nested dictionaries
+            elif isinstance(value, dict):
+                log_data[key] = self._prepare_data_for_logging(value)
+            # Handle lists
+            elif isinstance(value, list):
+                if len(value) > 0 and isinstance(value[0], dict):
+                    log_data[key] = [self._prepare_data_for_logging(item) if isinstance(item, dict) else item for item in value]
+                else:
+                    log_data[key] = value
+            # Handle other types
+            else:
+                try:
+                    # Test if value is JSON serializable
+                    json.dumps({key: value})
+                    log_data[key] = value
+                except (TypeError, OverflowError):
+                    log_data[key] = f"<{type(value).__name__}>"
+        
+        return log_data
 
 # Create a singleton instance
 firestore_client = FirestoreClient()

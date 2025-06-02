@@ -25,7 +25,9 @@ def render_task_form(task: Optional[Task] = None):
     # Create form
     with st.form(key="task_form"):
         # Task title (required)
-        title = st.text_input("Title", value=task.title if task else "", required=True)
+        title = st.text_input("Title", value=task.title if task else "")
+        if not title:
+            st.warning("Title is required")
         
         # Task description (optional)
         description = st.text_area("Description", value=task.description if task else "")
@@ -60,8 +62,8 @@ def render_task_form(task: Optional[Task] = None):
             st.error("Title is required")
             return
         
-        # Get current user ID
-        user_id = st.session_state.user.get('id')
+        # Get current user ID (using email as the user identifier)
+        user_id = st.session_state.user.get('email')
         
         # Prepare task data
         task_data = {

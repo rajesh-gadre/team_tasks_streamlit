@@ -37,16 +37,28 @@ def get_current_page() -> Page:
     return st.session_state.get('current_page', Page.ACTIVE)
 
 def render_navigation():
-    """Render navigation tabs."""
-    # Create tabs for navigation
-    tabs = st.tabs([
-        Page.ACTIVE,
-        Page.COMPLETED,
-        Page.DELETED,
-        Page.AI
-    ])
+    """Render navigation tabs and handle tab selection."""
+    # Get current page
+    current_page = get_current_page()
     
-    # Return tabs for use in main app
+    # Create a radio button for navigation instead of tabs
+    # This gives us more direct control over the navigation
+    selected_page = st.radio(
+        "Navigation",
+        options=[Page.ACTIVE, Page.COMPLETED, Page.DELETED, Page.AI],
+        horizontal=True,
+        label_visibility="collapsed",
+        index=[Page.ACTIVE, Page.COMPLETED, Page.DELETED, Page.AI].index(current_page)
+    )
+    
+    # If the selected page changes, update the current page
+    if selected_page != current_page:
+        set_page(selected_page)
+        st.rerun()
+    
+    # Create empty tabs to maintain compatibility with the rest of the app
+    tabs = st.tabs([Page.ACTIVE, Page.COMPLETED, Page.DELETED, Page.AI])
+    
     return tabs
 
 def render_sidebar():
@@ -65,14 +77,32 @@ def render_sidebar():
                 st.image(user['picture'], width=100)
             
             # Logout button
-            if st.button("Logout",key="logout_button"):
+            if st.button("Logout", key="logout_button"):
                 from src.auth.session import logout_user
                 logout_user()
                 st.rerun()
+                
+            # Refresh button
+            if st.button("🔄 Refresh Page", key="refresh_page_button"):
+                st.rerun()
+            
+            # Session state expander
+            with st.expander("Session"):
+                # Convert session state to a readable format
+                session_items = {}
+                for key, value in st.session_state.items():
+                    # Handle complex objects
+                    if hasattr(value, '__dict__'):
+                        session_items[key] = str(value)
+                    else:
+                        session_items[key] = value
+                
+                # Display session state as JSON
+                st.json(session_items)
         else:
             st.write("Please log in to access your tasks.")
             
             # Login button
-            if st.button("Login with Google",key="login_button_with_google_navigation"):
+            if st.button("Login with Google", key="login_button_with_google_navigation"):
                 st.session_state.current_page = Page.LOGIN
                 st.rerun()

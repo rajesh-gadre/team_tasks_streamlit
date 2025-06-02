@@ -6,7 +6,6 @@ import logging
 from typing import Dict, Optional, Any
 
 import streamlit as st
-from .google_auth import google_auth
 
 # Configure logging
 logger = logging.getLogger(__name__)
@@ -60,19 +59,15 @@ def is_authenticated() -> bool:
 
 def validate_session():
     """
-    Validate the current session by checking the JWT token.
+    Validate the current session.
     
     Returns:
         True if session is valid, False otherwise
     """
+    # We now rely on the aiclub_auth_lib to handle token validation
+    # Just check if user exists in session state
     user = get_current_user()
-    if not user or 'token' not in user:
-        return False
-    
-    # Validate token
-    is_valid, user_info = google_auth.validate_token(user['token'])
-    if not is_valid:
-        logout_user()
+    if not user:
         return False
     
     return True
@@ -87,12 +82,14 @@ def require_auth():
     """
     init_session()
     
+    # This function is kept for backward compatibility but is no longer used
+    # in the main flow. Authentication is now handled directly in app.py
+    # using the aiclub_auth_lib
+    
     if not is_authenticated():
-        st.warning("Please log in to access this page")
         return False
     
     if not validate_session():
-        st.warning("Your session has expired. Please log in again")
         return False
     
     return True
