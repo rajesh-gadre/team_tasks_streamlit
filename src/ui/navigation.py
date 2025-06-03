@@ -76,29 +76,10 @@ def render_sidebar():
             if user.get('picture'):
                 st.image(user['picture'], width=100)
             
-            # Logout button
-            if st.button("Logout", key="logout_button"):
-                from src.auth.session import logout_user
-                logout_user()
-                st.rerun()
-                
             # Refresh button
             if st.button("🔄 Refresh Page", key="refresh_page_button"):
                 st.rerun()
             
-            # Session state expander
-            with st.expander("Session"):
-                # Convert session state to a readable format
-                session_items = {}
-                for key, value in st.session_state.items():
-                    # Handle complex objects
-                    if hasattr(value, '__dict__'):
-                        session_items[key] = str(value)
-                    else:
-                        session_items[key] = value
-                
-                # Display session state as JSON
-                st.json(session_items)
         else:
             st.write("Please log in to access your tasks.")
             

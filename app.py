@@ -74,15 +74,30 @@ def main():
             
         def ai_assistant_page():
             render_ai_chat()
+
+        def debug_page():
+            st.header("Debug Information: Session State")
+            # Convert session state to a readable format
+            session_items = {}
+            for key, value in st.session_state.items():
+                # Handle complex objects
+                if hasattr(value, '__dict__'):
+                    session_items[key] = str(value)
+                else:
+                    session_items[key] = value
+            
+            # Display session state as JSON
+            st.json(session_items)
         
         # Define pages for navigation
         active_page = st.Page(active_tasks_page, title="Active Tasks", icon="✅", default=True)
         completed_page = st.Page(completed_tasks_page, title="Completed Tasks", icon="✨")
         deleted_page = st.Page(deleted_tasks_page, title="Deleted Tasks", icon="🗑️")
         ai_page = st.Page(ai_assistant_page, title="AI Assistant", icon="🤖")
+        debug_page_nav = st.Page(debug_page, title="Debug", icon="🐞")
         
         # Create navigation
-        page = st.navigation([active_page, completed_page, deleted_page, ai_page])
+        page = st.navigation([active_page, completed_page, deleted_page, ai_page, debug_page_nav])
         
         # Run the selected page
         page.run()
