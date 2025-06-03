@@ -5,11 +5,9 @@ Implements business logic for task operations.
 import logging
 from datetime import datetime
 from typing import Dict, List, Optional, Any
-
 from src.database.models import Task, TaskStatus
 from src.tasks.task_repository import task_repository
 
-# Configure logging
 logger = logging.getLogger(__name__)
 
 class TaskService:
@@ -84,8 +82,6 @@ class TaskService:
             ID of the created task
         """
         logger.info(f"Creating task for user {user_id}")
-        
-        # Create Task object
         task = Task(
             user_id=user_id,
             title=task_data.get('title'),
@@ -93,15 +89,11 @@ class TaskService:
             due_date=task_data.get('due_date'),
             notes=task_data.get('notes')
         )
-        
-        # Create initial update entry
         task.updates = [{
             'timestamp': datetime.now(),
             'user': user_id,
             'updateText': 'Task created'
         }]
-        
-        # Create task in repository
         return self.repository.create_task(task)
     
     def update_task(self, user_id: str, task_id: str, task_data: Dict[str, Any]) -> bool:
@@ -117,10 +109,7 @@ class TaskService:
             True if update was successful, False otherwise
         """
         logger.info(f"Updating task {task_id} for user {user_id}")
-        
-        # Convert keys to match database field names
         db_task_data = {}
-        
         if 'title' in task_data:
             db_task_data['title'] = task_data['title']
         if 'description' in task_data:
@@ -129,8 +118,6 @@ class TaskService:
             db_task_data['dueDate'] = task_data['due_date']
         if 'notes' in task_data:
             db_task_data['notes'] = task_data['notes']
-        
-        # Update task in repository
         return self.repository.update_task(user_id, task_id, db_task_data)
     
     def delete_task(self, user_id: str, task_id: str) -> bool:
