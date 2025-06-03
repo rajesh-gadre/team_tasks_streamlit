@@ -127,7 +127,7 @@ def render_login_page():
     st.session_state.state = state
     st.markdown(
         f'''
-        <a href="{auth_url}" target="_self">
+        <a href="{auth_url}" target="_blank" rel="noopener noreferrer">
             <button style="
                 background-color: #34a853;
                 color: white;
