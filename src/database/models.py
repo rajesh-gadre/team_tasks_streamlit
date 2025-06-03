@@ -105,6 +105,8 @@ class Task:
         }
         
         # Add optional fields if they exist
+        if self.id:
+            data['id'] = self.id
         if self.description:
             data['description'] = self.description
         if self.due_date:

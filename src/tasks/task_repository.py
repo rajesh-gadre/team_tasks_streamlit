@@ -17,6 +17,17 @@ class TaskRepository:
         """Initialize task repository with Firestore client."""
         self.collection = 'tasks'
         self.db = firestore_client
+
+    def get_all_tasks(self, user_id: str) -> List[Task]:
+        try:
+            filters = [
+                ('userId', '==', user_id),
+            ]
+            tasks_data = self.db.query(self.collection, filters=filters, order_by='createdAt', direction='DESCENDING')
+            return [Task.from_dict(task_data) for task_data in tasks_data]
+        except Exception as e:
+            logger.error(f"Error getting all tasks for user {user_id}: {str(e)}")
+            raise
     
     def get_active_tasks(self, user_id: str) -> List[Task]:
         """

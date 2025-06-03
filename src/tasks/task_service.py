@@ -16,6 +16,10 @@ class TaskService:
     def __init__(self):
         """Initialize task service with task repository."""
         self.repository = task_repository
+
+    def get_all_tasks(self, user_id: str) -> List[Task]:
+        logger.info(f"Getting all tasks for user {user_id}")
+        return self.repository.get_all_tasks(user_id)
     
     def get_active_tasks(self, user_id: str) -> List[Task]:
         """

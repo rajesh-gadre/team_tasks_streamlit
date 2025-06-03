@@ -80,6 +80,7 @@ class OpenAIService:
             active_tasks = task_service.get_active_tasks(user_id)
             completed_tasks = task_service.get_completed_tasks(user_id)
             deleted_tasks = task_service.get_deleted_tasks(user_id)
+            logger.info(f"Listing tasks for user {user_id}: Active:{active_tasks}, Completed:{completed_tasks}, Deleted:{deleted_tasks}")
             active_tasks_dict = [task.to_dict() for task in active_tasks]
             completed_tasks_dict = [task.to_dict() for task in completed_tasks]
             deleted_tasks_dict = [task.to_dict() for task in deleted_tasks]
