@@ -26,6 +26,7 @@ from src.ui.navigation import render_sidebar
 from src.ui.task_list import render_active_tasks, render_completed_tasks, render_deleted_tasks
 from src.ui.task_form import render_task_form
 from src.ui.ai_chat import render_ai_chat
+from src.ui.prompt_management import render_prompt_management
 
 st.set_page_config(
     page_title="Task Management System",
@@ -77,6 +78,9 @@ def main():
         def ai_assistant_page():
             render_ai_chat()
 
+        def prompt_management_page():
+            render_prompt_management()
+
         def debug_page():
             st.header("Debug Information: Session State")
             # Convert session state to a readable format
@@ -96,10 +100,11 @@ def main():
         completed_page = st.Page(completed_tasks_page, title="Completed Tasks", icon="✨")
         deleted_page = st.Page(deleted_tasks_page, title="Deleted Tasks", icon="🗑️")
         ai_page = st.Page(ai_assistant_page, title="AI Assistant", icon="🤖")
+        prompt_page = st.Page(prompt_management_page, title="Prompt Management", icon="📝")
         debug_page_nav = st.Page(debug_page, title="Debug", icon="🐞")
         
         # Create navigation
-        page = st.navigation([active_page, completed_page, deleted_page, ai_page, debug_page_nav])
+        page = st.navigation([active_page, completed_page, deleted_page, ai_page, prompt_page, debug_page_nav])
         
         # Run the selected page
         page.run()
