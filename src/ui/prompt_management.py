@@ -19,27 +19,20 @@ def render_prompt_management():
         return
 
     for prompt in prompts:
-        with st.expander(prompt.prompt_name, expanded=False):
-            with st.form(key=f"prompt_form_{prompt.id}"):
-                text = st.text_area("Prompt Text", value=prompt.text, key=f"text_{prompt.id}")
-                status = st.selectbox(
-                    "Status",
-                    options=[PromptStatus.ACTIVE, PromptStatus.INACTIVE],
-                    index=0 if prompt.status == PromptStatus.ACTIVE else 1,
-                    key=f"status_{prompt.id}"
-                )
-                submit = st.form_submit_button("Update")
+        with st.form(key=f"prompt_form_{prompt.id}"):
+            text = st.text_area("Prompt Text", value=prompt.text, key=f"text_{prompt.id}")
+            submit = st.form_submit_button("Update")
 
-            if submit:
-                if not text.strip():
-                    st.error("Prompt text cannot be empty")
-                else:
-                    data = {"text": text, "status": status}
-                    try:
-                        if prompt_service.update_prompt(prompt.id, data):
-                            st.success("Prompt updated successfully!")
-                            st.rerun()
-                        else:
-                            st.error("Failed to update prompt")
-                    except Exception as e:
-                        st.error(f"Failed to update prompt: {e}")
+        if submit:
+            if not text.strip():
+                st.error("Prompt text cannot be empty")
+            else:
+                data = {"text": text}
+                try:
+                    if prompt_service.update_prompt(prompt.id, data):
+                        st.success("Prompt updated successfully!")
+                        st.rerun()
+                    else:
+                        st.error("Failed to update prompt")
+                except Exception as e:
+                    st.error(f"Failed to update prompt: {e}")
