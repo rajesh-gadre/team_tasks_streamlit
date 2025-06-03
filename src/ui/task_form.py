@@ -65,10 +65,16 @@ def render_task_form(task: Optional[Task] = None):
         user_id = st.session_state.user.get('email')
         
         # Prepare task data
+        # Convert date to datetime for Firestore compatibility
+        due_date_value = None
+        if due_date and due_date != datetime.today().date():
+            # Convert date to datetime at midnight for consistent storage
+            due_date_value = datetime.combine(due_date, datetime.min.time())
+            
         task_data = {
             'title': title,
             'description': description if description else None,
-            'due_date': due_date if due_date != datetime.today().date() else None,
+            'due_date': due_date_value,
             'notes': notes if notes else None
         }
         
