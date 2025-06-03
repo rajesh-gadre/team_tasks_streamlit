@@ -10,6 +10,8 @@ from dotenv import load_dotenv
 from aiclub_auth_lib.oauth import AIClubGoogleAuth
 
 load_dotenv()
+for key, value in st.secrets.items():
+    os.environ[str(key)] = str(value)
 
 logging_level = os.environ.get('LOG_LEVEL', 'INFO')
 numeric_level = getattr(logging, logging_level.upper(), logging.INFO)
