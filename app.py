@@ -122,6 +122,7 @@ def main():
 def render_login_page():
     st.title("Welcome to Task Management System")
     st.write("Please log in to access your tasks.")
+    print(f"Login time. {os.environ=}")
     auth_url, state = auth.get_authorization_url()
     st.session_state.state = state
     st.markdown(
