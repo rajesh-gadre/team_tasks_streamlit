@@ -118,7 +118,7 @@ def main():
     else:
         render_login_page()
 
-@st.dialog("Please log in with your Google account")
+# WAS @st.dialog("Please log in with your Google account")
 def render_login_page():
     st.title("Welcome to Task Management System")
     st.write("Please log in to access your tasks.")
