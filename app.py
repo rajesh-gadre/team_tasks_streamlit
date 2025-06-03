@@ -20,7 +20,7 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 from src.auth.session import init_session, login_user, logout_user
-from src.ui.navigation import init_navigation, render_navigation, render_sidebar, Page, get_current_page, set_page
+from src.ui.navigation import render_sidebar
 from src.ui.task_list import render_active_tasks, render_completed_tasks, render_deleted_tasks
 from src.ui.task_form import render_task_form
 from src.ui.ai_chat import render_ai_chat
@@ -42,7 +42,6 @@ auth_config = {
 auth = AIClubGoogleAuth(auth_config)
 
 init_session()
-init_navigation()
 
 if "session_id" not in st.session_state:
     st.session_state.session_id = str(uuid.uuid4())
@@ -58,24 +57,35 @@ def main():
         
         render_sidebar()
         
-        tab1, tab2, tab3, tab4 = st.tabs(["Active Tasks", "Completed Tasks", "Deleted Tasks", "AI Assistant"])
-        
-        with tab1:
+        # Define page functions for navigation
+        def active_tasks_page():
             if st.session_state.get('adding_task'):
                 render_task_form()
             elif st.session_state.get('editing_task'):
                 render_task_form(st.session_state.editing_task)
             else:
                 render_active_tasks()
-        
-        with tab2:
+                
+        def completed_tasks_page():
             render_completed_tasks()
-        
-        with tab3:
+            
+        def deleted_tasks_page():
             render_deleted_tasks()
-        
-        with tab4:
+            
+        def ai_assistant_page():
             render_ai_chat()
+        
+        # Define pages for navigation
+        active_page = st.Page(active_tasks_page, title="Active Tasks", icon="✅", default=True)
+        completed_page = st.Page(completed_tasks_page, title="Completed Tasks", icon="✨")
+        deleted_page = st.Page(deleted_tasks_page, title="Deleted Tasks", icon="🗑️")
+        ai_page = st.Page(ai_assistant_page, title="AI Assistant", icon="🤖")
+        
+        # Create navigation
+        page = st.navigation([active_page, completed_page, deleted_page, ai_page])
+        
+        # Run the selected page
+        page.run()
                 
         with st.sidebar:
             if st.button("🚪 **Logout**", help="Sign out of your account"):
