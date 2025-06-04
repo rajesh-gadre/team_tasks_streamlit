@@ -45,7 +45,7 @@ class GoogleAuth:
         """
         try:
             # Create OAuth flow
-            print(f"Create-auth-url: {self.client_id} just before flow client config")
+            logger.debug("Creating OAuth flow")
             redirect_uri = self._get_redirect_uri()
             flow = Flow.from_client_config(
                 {
@@ -59,7 +59,7 @@ class GoogleAuth:
                 },
                 scopes=self.scopes
             )
-            print(f"Create-auth-url: {redirect_uri} just after flow client config")
+            logger.debug("OAuth flow created")
             
             # Generate authorization URL
             auth_url, _ = flow.authorization_url(
@@ -67,7 +67,7 @@ class GoogleAuth:
                 include_granted_scopes='true',
                 prompt='consent'
             )
-            print(f"Create-auth-url: {auth_url} just after flow authorization_url")
+            logger.debug("Authorization URL generated")
             
             # Store flow in session state for later use
             st.session_state['oauth_flow'] = flow
