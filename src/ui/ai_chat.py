@@ -24,17 +24,16 @@ def render_ai_chat():
     """)
     if st.session_state.ai_processing:
         try:
-            with st.spinner("Processing your question..."):
-                ai_input_with_id = st.session_state.get(
-                    "ai_input_with_id", f"{st.session_state.ai_input}\n\nuser_id: {user_id}"
-                )
-                result = openai_service.process_chat(user_id, ai_input_with_id)
-                if result:
-                    st.session_state.ai_response = result.get("response")
-                    st.session_state.ai_input = ""
-                    st.session_state.ai_processing = False
-                    st.session_state.ai_input_with_id = ""
-                    st.rerun()
+            ai_input_with_id = st.session_state.get(
+                "ai_input_with_id", f"{st.session_state.ai_input}\n\nuser_id: {user_id}"
+            )
+            result = openai_service.process_chat(user_id, ai_input_with_id)
+            if result:
+                st.session_state.ai_response = result.get("response")
+                st.session_state.ai_input = ""
+                st.session_state.ai_processing = False
+                st.session_state.ai_input_with_id = ""
+                st.rerun()
         except Exception as e:
             logger.error(f"Error processing AI chat: {str(e)}")
             st.error(f"Error processing your question: {str(e)}")
