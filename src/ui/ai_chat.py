@@ -6,6 +6,7 @@ import streamlit as st
 import logging
 from typing import Dict, Any
 from src.ai.openai_service import openai_service
+import traceback
 
 logger = logging.getLogger(__name__)
 
@@ -38,6 +39,7 @@ def render_ai_chat():
             logger.error(f"Error processing AI chat: {str(e)}")
             st.error(f"Error processing your question: {str(e)}")
             st.session_state.ai_processing = False
+            traceback.print_exc()
 
     with st.form(key="ai_chat_form"):
         ai_input = st.text_area(

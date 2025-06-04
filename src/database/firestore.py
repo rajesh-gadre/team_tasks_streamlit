@@ -37,7 +37,13 @@ class FirestoreClient:
             # Get Firebase credentials from environment variables
             project_id = os.environ.get('FIREBASE_PROJECT_ID')
             client_email = os.environ.get('FIREBASE_CLIENT_EMAIL')
-            private_key = os.environ.get('FIREBASE_PRIVATE_KEY', '').replace('\\n', '\n')
+            # Fix private key formatting - ensure proper newline handling
+            private_key = os.environ.get('FIREBASE_PRIVATE_KEY', '')
+            if private_key:
+                # Handle different possible formats of the private key in env var
+                private_key = private_key.replace('\\n', '\n')
+                if not private_key.startswith('-----BEGIN PRIVATE KEY-----'):
+                    logger.warning("Private key doesn't have the expected format")
             token_uri = os.environ.get('FIREBASE_TOKEN_URI')
             auth_uri = os.environ.get('FIREBASE_AUTH_URI')
             auth_provider_x509_cert_url = os.environ.get('FIREBASE_AUTH_PROVIDER_X509_CERT_URL')
@@ -210,6 +216,37 @@ class FirestoreClient:
         except Exception as e:
             # Log the error
             logger.error(f"DB ERROR [DELETE] - Collection: {collection} - Document ID: {doc_id} - Error: {str(e)}")
+            raise
+
+    def delete_all(self, collection: str) -> bool:
+        """
+        Delete all documents from the specified collection.
+        
+        Args:
+            collection: Collection name
+            
+        Returns:
+            True if deletion was successful, False otherwise
+        """
+        try:
+            # Log the request
+            logger.debug(f"DB REQUEST [DELETE ALL] - Collection: {collection}")
+            
+            # Get all documents from the collection
+            docs = self.db.collection(collection).stream()
+            
+            # Delete each document individually
+            deleted_count = 0
+            for doc in docs:
+                doc.reference.delete()
+                deleted_count += 1
+            
+            # Log the response
+            logger.info(f"DB RESPONSE [DELETE ALL] - Collection: {collection} - Success - Deleted {deleted_count} documents")
+            return True
+        except Exception as e:
+            # Log the error
+            logger.error(f"DB ERROR [DELETE ALL] - Collection: {collection} - Error: {str(e)}")
             raise
     
     def query(self, collection: str, filters: List[tuple] = None, order_by: str = None, 

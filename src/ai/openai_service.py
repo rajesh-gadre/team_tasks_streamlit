@@ -49,6 +49,14 @@ class TaskChanges(BaseModel):
     new_tasks: List[NewTask]
     modified_tasks: List[ModifiedTask]
 
+def delete_all_chats():
+    try:
+        firestore_client.delete_all('AI_chats')
+        logger.info("All AI chats deleted")
+    except Exception as e:
+        logger.error(f"Error deleting all AI chats: {str(e)}")
+        raise
+
 
 class OpenAIService:
     def __init__(self):
@@ -72,7 +80,7 @@ class OpenAIService:
             response = self._call_openai(user_id, system_prompt, input_text, task_list, chat_id)
             if response is None:
                 return None
-            self.db.update(self.collection, chat_id, {'Response': response})
+            self.db.update(self.collection, chat_id, {'Response': json.dumps(response.dict(), cls=FirestoreEncoder)})
             logger.info(f"Chat processed for user {user_id}")
             return {
                 'id': chat_id,
@@ -80,6 +88,7 @@ class OpenAIService:
             }
         except Exception as e:
             logger.error(f"Error processing chat for user {user_id}: {str(e)}")
+            traceback.print_exc()
             raise
     
     def _list_tasks(self, user_id: str):
@@ -201,7 +210,7 @@ class OpenAIService:
             logger.error(f"SECOND CALL: Error calling OpenAI API. Details:\n{detailed_error_message}\nContent1 that caused error (first 500 chars):\n{content1[:500]}\nTraceback:\n{traceback.format_exc()}")
             raise
 
-    def __third_call(self, user_id: str, resp: TaskChanges) -> str:
+    def __third_call(self, user_id: str, resp: TaskChanges) -> TaskChanges:
         """Create and update tasks based on OpenAI response."""
         logger.info(f"\n\n\nCalling third-call {resp}")
         try:
@@ -221,39 +230,24 @@ class OpenAIService:
                 )
                 task_service.update_task(user_id, task_id, update_data)
 
-            return "Tasks updated successfully."
+            return resp
         except Exception as e:
             logger.error(f"THIRD CALL: Error updating tasks - {str(e)}")
-            return f"Error updating tasks: {str(e)}"
+            return None
         
     def _call_openai(self, user_id: str, system_prompt: str, user_input: str,
                      task_list: Dict[str, Any], chat_id: str) -> str:
         """Call OpenAI and collect user feedback before returning."""
 
-        pending_key = f"pending_chat_{chat_id}"
+        spinner = getattr(st, "spinner", None)
+        if spinner is None:
+            from contextlib import nullcontext
+            spinner = nullcontext
+        with spinner("Processing your question..."):
+            content1 = self._first_call(system_prompt, user_input, task_list)
+            resp = self._second_call(content1)
+            final_response = self.__third_call(user_id, resp)
 
-        if pending_key in st.session_state:
-            data = st.session_state[pending_key]
-            resp = data["resp"]
-            final_response = data["final_response"]
-        else:
-            spinner = getattr(st, "spinner", None)
-            if spinner is None:
-                from contextlib import nullcontext
-                spinner = nullcontext
-            with spinner("Processing your question..."):
-                content1 = self._first_call(system_prompt, user_input, task_list)
-                resp = self._second_call(content1)
-                final_response = self.__third_call(user_id, resp)
-            st.session_state[pending_key] = {
-                "resp": resp,
-                "final_response": final_response,
-            }
-
-        if not self.__collect_feedback(chat_id, resp):
-            st.stop()
-
-        st.session_state.pop(pending_key, None)
         logger.info(f"\n\n\nOpenAI response: {final_response}")
         return final_response
 
@@ -290,16 +284,18 @@ class OpenAIService:
             cancel = st.form_submit_button("Cancel")
 
         if submit:
+            logger.info(f"Feedback submitted for chat_id {chat_id}")
+            st.session_state[feedback_key] = True
             self.db.update(
                 self.collection,
                 chat_id,
                 {"feedbackRating": rating, "feedbackText": text},
             )
-            st.session_state[feedback_key] = True
             st.success("Feedback recorded")
             return True
 
         if cancel:
+            logger.info(f"Feedback cancelled for chat_id {chat_id}")
             st.session_state[feedback_key] = True
             return True
 

@@ -8,6 +8,7 @@ import streamlit as st
 import uuid
 from dotenv import load_dotenv
 from aiclub_auth_lib.oauth import AIClubGoogleAuth
+from src.ai.openai_service import delete_all_chats
 
 load_dotenv()
 for key, value in st.secrets.items():
@@ -85,9 +86,7 @@ def main():
         def summary_page():
             render_summary()
 
-        def debug_page():
-            st.header("Debug Information: Session State")
-            # Convert session state to a readable format
+        def debug_session_state():
             session_items = {}
             for key, value in st.session_state.items():
                 # Handle complex objects
@@ -98,6 +97,14 @@ def main():
             
             # Display session state as JSON
             st.json(session_items)
+
+        def debug_page():
+            st.header("Debug Information")
+            with st.expander("Session State"):
+                debug_session_state()
+            with st.expander("Delete AI Chats"):
+                if st.button("Delete AI Chats"):
+                    delete_all_chats()
         
         # Define pages for navigation
         active_page = st.Page(active_tasks_page, title="Active Tasks", icon="✅", default=True)
