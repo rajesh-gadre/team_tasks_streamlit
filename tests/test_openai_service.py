@@ -16,6 +16,7 @@ sys.modules['streamlit'].radio = lambda *a, **k: '👍'
 sys.modules['streamlit'].text_area = lambda *a, **k: ''
 sys.modules['streamlit'].button = lambda *a, **k: False
 sys.modules['streamlit'].success = lambda *a, **k: None
+sys.modules['streamlit'].stop = lambda: None
 lc_core = ModuleType('langchain_core')
 lc_core.pydantic_v1 = ModuleType('pydantic_v1')
 lc_core.messages = ModuleType('messages')

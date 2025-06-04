@@ -22,30 +22,38 @@ def render_ai_chat():
     st.markdown("""
     Talk with the AI assistant for help creating and/or updating your tasks. 
     """)
-    with st.form(key="ai_chat_form"):
-        ai_input = st.text_area("Your question", value=st.session_state.ai_input, height=100)
-        submit_button = st.form_submit_button("Submit")
-    
-    if submit_button and ai_input.strip():
-        st.session_state.ai_input = ai_input
-        st.session_state.ai_processing = True
+    if st.session_state.ai_processing:
         try:
             with st.spinner("Processing your question..."):
-                ai_input_with_id = f"{ai_input}\n\nuser_id: {user_id}"
+                ai_input_with_id = st.session_state.get(
+                    "ai_input_with_id", f"{st.session_state.ai_input}\n\nuser_id: {user_id}"
+                )
                 result = openai_service.process_chat(user_id, ai_input_with_id)
-                st.session_state.ai_response = result.get('response')
-                st.session_state.ai_input = ""
-                st.session_state.ai_processing = False
-                st.rerun()
+                if result:
+                    st.session_state.ai_response = result.get("response")
+                    st.session_state.ai_input = ""
+                    st.session_state.ai_processing = False
+                    st.session_state.ai_input_with_id = ""
+                    st.rerun()
         except Exception as e:
             logger.error(f"Error processing AI chat: {str(e)}")
             st.error(f"Error processing your question: {str(e)}")
             st.session_state.ai_processing = False
+
+    with st.form(key="ai_chat_form"):
+        ai_input = st.text_area(
+            "Your question", value=st.session_state.ai_input, height=100
+        )
+        submit_button = st.form_submit_button("Submit")
+
+    if submit_button and ai_input.strip():
+        st.session_state.ai_input = ai_input
+        st.session_state.ai_input_with_id = f"{ai_input}\n\nuser_id: {user_id}"
+        st.session_state.ai_processing = True
+        st.rerun()
     if st.session_state.ai_response:
         st.subheader("Response")
         st.markdown(st.session_state.ai_response)
         if st.button("Clear Response"):
             st.session_state.ai_response = None
             st.rerun()
-    if st.session_state.ai_processing:
-        st.spinner("Processing your question...")

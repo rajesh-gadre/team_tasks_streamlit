@@ -226,22 +226,43 @@ class OpenAIService:
         
     def _call_openai(self, user_id: str, system_prompt: str, user_input: str,
                      task_list: Dict[str, Any], chat_id: str) -> str:
-        content1 = self._first_call(system_prompt, user_input, task_list)
-        resp = self._second_call(content1)
-        final_response = self.__third_call(user_id, resp)
-        self.__collect_feedback(chat_id, resp)
+        """Call OpenAI and collect user feedback before returning."""
+
+        pending_key = f"pending_chat_{chat_id}"
+
+        if pending_key in st.session_state:
+            data = st.session_state[pending_key]
+            resp = data["resp"]
+            final_response = data["final_response"]
+        else:
+            content1 = self._first_call(system_prompt, user_input, task_list)
+            resp = self._second_call(content1)
+            final_response = self.__third_call(user_id, resp)
+            st.session_state[pending_key] = {
+                "resp": resp,
+                "final_response": final_response,
+            }
+
+        if not self.__collect_feedback(chat_id, resp):
+            st.stop()
+
+        st.session_state.pop(pending_key, None)
         logger.info(f"\n\n\nOpenAI response: {final_response}")
         return final_response
 
-    def __collect_feedback(self, chat_id: str, resp: TaskChanges) -> None:
-        """Display a modal dialog to capture user feedback."""
+    def __collect_feedback(self, chat_id: str, resp: TaskChanges) -> bool:
+        """Display a form to capture user feedback.
+
+        Returns True when feedback has been submitted or the dialog was
+        cancelled. Returns False otherwise.
+        """
+
         feedback_key = f"feedback_submitted_{chat_id}"
 
         if st.session_state.get(feedback_key):
-            return
+            return True
 
-        @st.dialog("Review AI Task Changes")
-        def feedback_dialog():
+        with st.form(f"feedback_form_{chat_id}"):
             st.subheader("New Tasks")
             for t in resp.new_tasks:
                 st.json(t.dict(exclude_none=True))
@@ -258,21 +279,24 @@ class OpenAIService:
                 "Additional feedback",
                 key=f"text_{chat_id}",
             )
-            col1, col2 = st.columns(2)
-            with col1:
-                if st.button("Submit", key=f"submit_{chat_id}"):
-                    self.db.update(
-                        self.collection,
-                        chat_id,
-                        {"feedbackRating": rating, "feedbackText": text},
-                    )
-                    st.session_state[feedback_key] = True
-                    st.success("Feedback recorded")
-            with col2:
-                if st.button("Cancel", key=f"cancel_{chat_id}"):
-                    st.session_state[feedback_key] = True
+            submit = st.form_submit_button("Submit", key=f"submit_{chat_id}")
+            cancel = st.form_submit_button("Cancel", key=f"cancel_{chat_id}")
 
-        feedback_dialog()
+        if submit:
+            self.db.update(
+                self.collection,
+                chat_id,
+                {"feedbackRating": rating, "feedbackText": text},
+            )
+            st.session_state[feedback_key] = True
+            st.success("Feedback recorded")
+            return True
+
+        if cancel:
+            st.session_state[feedback_key] = True
+            return True
+
+        return False
     
     def _call_openai_old(self, system_prompt: str, user_input: str, task_list: Dict[str, Any]) -> str:
         try:
