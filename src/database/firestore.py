@@ -11,6 +11,7 @@ from typing import Dict, List, Optional, Any, Union
 import firebase_admin
 from firebase_admin import credentials, firestore
 from firebase_admin.firestore import SERVER_TIMESTAMP
+import traceback # Add this
 
 # Configure logging
 logger = logging.getLogger(__name__)
@@ -249,25 +250,34 @@ class FirestoreClient:
             if limit:
                 query_ref = query_ref.limit(limit)
             
-            # Execute query
+            logger.debug(f"DB REQUEST [QUERY] - Constructed query_ref: {{str(query_ref)}}") # Log the query object
+            
             docs = query_ref.stream()
             
-            # Process results
             results = []
+            count = 0
+            logger.debug(f"DB RESPONSE [QUERY] - Starting to stream documents from query for collection '{collection}' with filters: {filter_str}")
             for doc in docs:
-                data = doc.to_dict()
-                data['id'] = doc.id
-                results.append(data)
+                count += 1
+                logger.debug(f"DB RESPONSE [QUERY] - Streamed doc ID: {doc.id}, Exists: {doc.exists}")
+                try:
+                    data = doc.to_dict()
+                    if data is not None: # Ensure data is not None after to_dict()
+                        data['id'] = doc.id
+                        results.append(data)
+                    else:
+                        logger.warning(f"DB RESPONSE [QUERY] - doc.to_dict() returned None for doc ID: {doc.id}. Skipping.")
+                except Exception as e_to_dict:
+                    logger.error(f"DB RESPONSE [QUERY] - Error calling to_dict() for doc ID: {doc.id}. Error: {str(e_to_dict)}. Traceback: {traceback.format_exc()}. Skipping.")
             
-            # Log the response
-            logger.info(f"DB RESPONSE [QUERY] - Collection: {collection} - Results: {len(results)} documents")
-            if results and len(results) <= 10:  # Only log detailed results if there are 10 or fewer
-                logger.debug(f"DB RESPONSE DATA [QUERY] - First 10 document IDs: {[doc.get('id', 'unknown') for doc in results[:10]]}")
+            logger.info(f"DB RESPONSE [QUERY] - Finished streaming. Total docs processed from stream: {count}. Total valid results: {len(results)} for collection '{collection}'")
+            
+            if results and len(results) <= 10:
+                logger.debug(f"DB RESPONSE DATA [QUERY] - First 10 valid result IDs: {[doc_data.get('id', 'unknown') for doc_data in results[:10]]}")
             
             return results
         except Exception as e:
-            # Log the error
-            logger.error(f"DB ERROR [QUERY] - Collection: {collection} - Error: {str(e)}")
+            logger.error(f"DB ERROR [QUERY] - Collection: {collection} - Error: {str(e)}\nTraceback: {traceback.format_exc()}")
             raise
 
     def _prepare_data_for_logging(self, data: Dict[str, Any]) -> Dict[str, Any]:

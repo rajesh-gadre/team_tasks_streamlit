@@ -23,7 +23,7 @@ class TaskRepository:
             filters = [
                 ('userId', '==', user_id),
             ]
-            tasks_data = self.db.query(self.collection, filters=filters, order_by='createdAt', direction='DESCENDING')
+            tasks_data = self.db.query(self.collection, filters=filters, order_by='updatedAt', direction='DESCENDING')
             return [Task.from_dict(task_data) for task_data in tasks_data]
         except Exception as e:
             logger.error(f"Error getting all tasks for user {user_id}: {str(e)}")
@@ -44,7 +44,7 @@ class TaskRepository:
                 ('userId', '==', user_id),
                 ('status', '==', TaskStatus.ACTIVE)
             ]
-            tasks_data = self.db.query(self.collection, filters=filters, order_by='createdAt', direction='DESCENDING')
+            tasks_data = self.db.query(self.collection, filters=filters, order_by='updatedAt', direction='DESCENDING')
             return [Task.from_dict(task_data) for task_data in tasks_data]
         except Exception as e:
             logger.error(f"Error getting active tasks for user {user_id}: {str(e)}")
@@ -62,10 +62,10 @@ class TaskRepository:
         """
         try:
             filters = [
-                ('userId', '==', user_id),
-                ('status', '==', TaskStatus.COMPLETED)
+                ('status', '==', TaskStatus.COMPLETED),
+                ('userId', '==', user_id)
             ]
-            tasks_data = self.db.query(self.collection, filters=filters, order_by='completionDate', direction='DESCENDING')
+            tasks_data = self.db.query(self.collection, filters=filters, order_by='updatedAt', direction='DESCENDING')
             return [Task.from_dict(task_data) for task_data in tasks_data]
         except Exception as e:
             logger.error(f"Error getting completed tasks for user {user_id}: {str(e)}")
@@ -86,7 +86,7 @@ class TaskRepository:
                 ('userId', '==', user_id),
                 ('status', '==', TaskStatus.DELETED)
             ]
-            tasks_data = self.db.query(self.collection, filters=filters, order_by='deletionDate', direction='DESCENDING')
+            tasks_data = self.db.query(self.collection, filters=filters, order_by='updatedAt', direction='DESCENDING')
             return [Task.from_dict(task_data) for task_data in tasks_data]
         except Exception as e:
             logger.error(f"Error getting deleted tasks for user {user_id}: {str(e)}")

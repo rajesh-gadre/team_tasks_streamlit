@@ -122,6 +122,8 @@ class TaskService:
             db_task_data['dueDate'] = task_data['due_date']
         if 'notes' in task_data:
             db_task_data['notes'] = task_data['notes']
+        if 'status' in task_data:
+            db_task_data['status'] = task_data['status']
         return self.repository.update_task(user_id, task_id, db_task_data)
     
     def delete_task(self, user_id: str, task_id: str) -> bool:
