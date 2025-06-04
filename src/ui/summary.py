@@ -18,7 +18,7 @@ def render_summary():
     st.header("Weekly Summary")
     user_id = st.session_state.user.get('email')
     tasks = task_service.get_all_tasks(user_id)
-    one_week_ago = datetime.now() - timedelta(days=7)
+    one_week_ago = datetime.now(datetime.utcnow().astimezone().tzinfo) - timedelta(days=7)
     recent_updates = []
 
     for task in tasks:
@@ -27,6 +27,8 @@ def render_summary():
             if isinstance(ts, str):
                 try:
                     ts = datetime.fromisoformat(ts)
+                    if ts.tzinfo is None:
+                        ts = ts.replace(tzinfo=datetime.utcnow().astimezone().tzinfo)
                 except ValueError:
                     continue
             if isinstance(ts, datetime) and ts >= one_week_ago:
