@@ -153,7 +153,9 @@ class AIChat:
         input_text: str = None,
         created_at: Optional[datetime] = None,
         updated_at: Optional[datetime] = None,
-        response: Optional[str] = None
+        response: Optional[str] = None,
+        feedback_rating: Optional[str] = None,
+        feedback_text: Optional[str] = None
     ):
         """
         Initialize an AIChat object.
@@ -165,6 +167,8 @@ class AIChat:
             created_at: Creation timestamp
             updated_at: Last update timestamp
             response: AI-generated response
+            feedback_rating: Thumbs up or down from the user (optional)
+            feedback_text: Additional feedback text (optional)
         """
         self.id = id
         self.user_id = user_id
@@ -172,6 +176,8 @@ class AIChat:
         self.created_at = created_at
         self.updated_at = updated_at
         self.response = response
+        self.feedback_rating = feedback_rating
+        self.feedback_text = feedback_text
     
     @classmethod
     def from_dict(cls, data: Dict[str, Any]) -> 'AIChat':
@@ -190,7 +196,9 @@ class AIChat:
             input_text=data.get('inputText'),
             created_at=data.get('createdAt'),
             updated_at=data.get('updated_at'),
-            response=data.get('Response')
+            response=data.get('Response'),
+            feedback_rating=data.get('feedbackRating'),
+            feedback_text=data.get('feedbackText')
         )
     
     def to_dict(self) -> Dict[str, Any]:
@@ -204,13 +212,18 @@ class AIChat:
             'user_id': self.user_id,
             'inputText': self.input_text
         }
-        
+
         # Add response if it exists
         if self.response:
             data['Response'] = self.response
-            
+
+        if self.feedback_rating is not None:
+            data['feedbackRating'] = self.feedback_rating
+        if self.feedback_text is not None:
+            data['feedbackText'] = self.feedback_text
+
         # Don't include created_at and updated_at as they're handled by Firestore
-        
+
         return data
     
     def validate(self) -> bool:

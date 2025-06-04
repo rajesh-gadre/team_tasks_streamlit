@@ -5,6 +5,17 @@ from types import SimpleNamespace, ModuleType
 # Stub external dependencies before importing the module
 sys.modules.setdefault('streamlit', ModuleType('streamlit'))
 sys.modules['streamlit'].session_state = {}
+def _dummy_dialog(*a, **k):
+    def decorator(func):
+        return func
+    return decorator
+sys.modules['streamlit'].dialog = _dummy_dialog
+sys.modules['streamlit'].subheader = lambda *a, **k: None
+sys.modules['streamlit'].json = lambda *a, **k: None
+sys.modules['streamlit'].radio = lambda *a, **k: '👍'
+sys.modules['streamlit'].text_area = lambda *a, **k: ''
+sys.modules['streamlit'].button = lambda *a, **k: False
+sys.modules['streamlit'].success = lambda *a, **k: None
 lc_core = ModuleType('langchain_core')
 lc_core.pydantic_v1 = ModuleType('pydantic_v1')
 lc_core.messages = ModuleType('messages')
@@ -45,5 +56,6 @@ def test_call_openai(monkeypatch):
     monkeypatch.setattr(service, '_second_call', lambda c1: tc)
     monkeypatch.setattr(service, '_OpenAIService__third_call', lambda uid, r: 'done')
 
-    result = service._call_openai('user', 'prompt', 'input', {})
+    monkeypatch.setattr(service, '_OpenAIService__collect_feedback', lambda cid, r: None)
+    result = service._call_openai('user', 'prompt', 'input', {}, 'chat1')
     assert result == 'done'

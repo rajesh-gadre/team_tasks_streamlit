@@ -4,6 +4,7 @@ import json
 import logging
 import datetime
 from typing import Dict, Optional, Any, List
+import streamlit as st
 from langchain_core.pydantic_v1 import BaseModel, Field
 from langchain_openai import ChatOpenAI
 from langchain_core.messages import SystemMessage, HumanMessage
@@ -68,7 +69,7 @@ class OpenAIService:
             task_list = self._list_tasks(user_id)
             system_prompt = self._get_system_prompt()
             chat_id = self.db.create(self.collection, chat_data)
-            response = self._call_openai(user_id, system_prompt, input_text, task_list)
+            response = self._call_openai(user_id, system_prompt, input_text, task_list, chat_id)
             self.db.update(self.collection, chat_id, {'Response': response})
             logger.info(f"Chat processed for user {user_id}")
             return {
@@ -223,12 +224,43 @@ class OpenAIService:
             logger.error(f"THIRD CALL: Error updating tasks - {str(e)}")
             return f"Error updating tasks: {str(e)}"
         
-    def _call_openai(self, user_id: str, system_prompt: str, user_input: str, task_list: Dict[str, Any]) -> str:
+    def _call_openai(self, user_id: str, system_prompt: str, user_input: str,
+                     task_list: Dict[str, Any], chat_id: str) -> str:
         content1 = self._first_call(system_prompt, user_input, task_list)
         resp = self._second_call(content1)
         final_response = self.__third_call(user_id, resp)
+        self.__collect_feedback(chat_id, resp)
         logger.info(f"\n\n\nOpenAI response: {final_response}")
         return final_response
+
+    def __collect_feedback(self, chat_id: str, resp: TaskChanges) -> None:
+        """Display a modal dialog to capture user feedback."""
+        @st.dialog("Review AI Task Changes")
+        def feedback_dialog():
+            st.subheader("New Tasks")
+            for t in resp.new_tasks:
+                st.json(t.dict(exclude_none=True))
+            st.subheader("Modified Tasks")
+            for t in resp.modified_tasks:
+                st.json(t.dict(exclude_none=True))
+            rating = st.radio(
+                "Are these updates correct?",
+                ("👍", "👎"),
+                key=f"rating_{chat_id}",
+                horizontal=True,
+            )
+            text = st.text_area(
+                "Additional feedback",
+                key=f"text_{chat_id}",
+            )
+            if st.button("Submit", key=f"submit_{chat_id}"):
+                self.db.update(
+                    self.collection,
+                    chat_id,
+                    {"feedbackRating": rating, "feedbackText": text},
+                )
+                st.success("Feedback recorded")
+        feedback_dialog()
     
     def _call_openai_old(self, system_prompt: str, user_input: str, task_list: Dict[str, Any]) -> str:
         try:
