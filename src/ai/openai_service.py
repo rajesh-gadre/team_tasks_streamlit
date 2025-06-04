@@ -235,6 +235,11 @@ class OpenAIService:
 
     def __collect_feedback(self, chat_id: str, resp: TaskChanges) -> None:
         """Display a modal dialog to capture user feedback."""
+        feedback_key = f"feedback_submitted_{chat_id}"
+
+        if st.session_state.get(feedback_key):
+            return
+
         @st.dialog("Review AI Task Changes")
         def feedback_dialog():
             st.subheader("New Tasks")
@@ -253,13 +258,20 @@ class OpenAIService:
                 "Additional feedback",
                 key=f"text_{chat_id}",
             )
-            if st.button("Submit", key=f"submit_{chat_id}"):
-                self.db.update(
-                    self.collection,
-                    chat_id,
-                    {"feedbackRating": rating, "feedbackText": text},
-                )
-                st.success("Feedback recorded")
+            col1, col2 = st.columns(2)
+            with col1:
+                if st.button("Submit", key=f"submit_{chat_id}"):
+                    self.db.update(
+                        self.collection,
+                        chat_id,
+                        {"feedbackRating": rating, "feedbackText": text},
+                    )
+                    st.session_state[feedback_key] = True
+                    st.success("Feedback recorded")
+            with col2:
+                if st.button("Cancel", key=f"cancel_{chat_id}"):
+                    st.session_state[feedback_key] = True
+
         feedback_dialog()
     
     def _call_openai_old(self, system_prompt: str, user_input: str, task_list: Dict[str, Any]) -> str:
