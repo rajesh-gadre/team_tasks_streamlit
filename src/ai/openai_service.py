@@ -70,6 +70,8 @@ class OpenAIService:
             system_prompt = self._get_system_prompt()
             chat_id = self.db.create(self.collection, chat_data)
             response = self._call_openai(user_id, system_prompt, input_text, task_list, chat_id)
+            if response is None:
+                return None
             self.db.update(self.collection, chat_id, {'Response': response})
             logger.info(f"Chat processed for user {user_id}")
             return {
@@ -235,9 +237,14 @@ class OpenAIService:
             resp = data["resp"]
             final_response = data["final_response"]
         else:
-            content1 = self._first_call(system_prompt, user_input, task_list)
-            resp = self._second_call(content1)
-            final_response = self.__third_call(user_id, resp)
+            spinner = getattr(st, "spinner", None)
+            if spinner is None:
+                from contextlib import nullcontext
+                spinner = nullcontext
+            with spinner("Processing your question..."):
+                content1 = self._first_call(system_prompt, user_input, task_list)
+                resp = self._second_call(content1)
+                final_response = self.__third_call(user_id, resp)
             st.session_state[pending_key] = {
                 "resp": resp,
                 "final_response": final_response,
