@@ -107,17 +107,22 @@ def main():
         prompt_page = st.Page(prompt_management_page, title="Prompt Management", icon="📝")
         summary_nav = st.Page(summary_page, title="Summary", icon="📋")
         debug_page_nav = st.Page(debug_page, title="Debug", icon="🐞")
+
+        user_pages=[active_page, completed_page, deleted_page, ai_page]
+        admin_pages=[prompt_page, summary_nav, debug_page_nav]
         
         # Create navigation
-        page = st.navigation([
-            active_page,
-            completed_page,
-            deleted_page,
-            ai_page,
-            prompt_page,
-            summary_nav,
-            debug_page_nav,
-        ])
+        #page = st.navigation([
+        #    active_page,
+        #    completed_page,
+        #    deleted_page,
+        #    ai_page,
+        #    prompt_page,
+        #    summary_nav,
+        #    debug_page_nav,
+        #])
+
+        page = st.navigation({"User":user_pages, "Admin":admin_pages})
         
         # Run the selected page
         page.run()
