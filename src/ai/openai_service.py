@@ -83,7 +83,7 @@ class OpenAIService:
             self.db.update(self.collection, chat_id, {'Response': json.dumps(response.dict(), cls=FirestoreEncoder)})
             logger.info(f"Chat processed for user {user_id}")
             return {
-                'id': chat_id,
+                'chat_id': chat_id,
                 'response': response
             }
         except Exception as e:

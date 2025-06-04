@@ -5,10 +5,63 @@ Handles rendering of AI chat interface and interactions.
 import streamlit as st
 import logging
 from typing import Dict, Any
-from src.ai.openai_service import openai_service
+from src.ai.openai_service import openai_service, TaskChanges
 import traceback
+from src.database.firestore import firestore_client
 
 logger = logging.getLogger(__name__)
+
+def __collect_feedback(chat_id: str, resp: TaskChanges) -> bool:
+    """Display a form to capture user feedback.
+
+    Returns True when feedback has been submitted or the dialog was
+    cancelled. Returns False otherwise.
+    """
+
+    feedback_key = f"feedback_submitted_{chat_id}"
+    logger.info(f"\n\n\nCollecting feedback for chat_id {chat_id}, resp: {resp}")
+
+    if st.session_state.get(feedback_key):
+        return True
+
+    logger.info(f"Before ST.FORM in collecting feedback: {chat_id=}, {resp=}")
+    with st.form(f"feedback_form_{chat_id}"):
+        st.subheader("New Tasks")
+        for t in resp.new_tasks:
+            st.json(t.dict(exclude_none=True))
+        st.subheader("Modified Tasks")
+        for t in resp.modified_tasks:
+            st.json(t.dict(exclude_none=True))
+        rating = st.radio(
+            "Are these updates correct?",
+            ("👍", "👎"),
+            key=f"rating_{chat_id}",
+            horizontal=True,
+        )
+        text = st.text_area(
+            "Additional feedback",
+            key=f"text_{chat_id}",
+        )
+        submit = st.form_submit_button("Submit")
+        cancel = st.form_submit_button("Cancel")
+
+        if submit:
+            logger.info(f"Feedback submitted for chat_id {chat_id}")
+            st.session_state[feedback_key] = True
+            firestore_client.update(
+                'AI_chats',
+                chat_id,
+                {"feedbackRating": rating, "feedbackText": text},
+            )
+            st.success("Feedback recorded")
+            return True
+
+        if cancel:
+            logger.info(f"Feedback cancelled for chat_id {chat_id}")
+            st.session_state[feedback_key] = True
+            return True
+
+    return False
 
 def render_ai_chat():
     """Render AI chat interface."""
@@ -29,8 +82,10 @@ def render_ai_chat():
                 "ai_input_with_id", f"{st.session_state.ai_input}\n\nuser_id: {user_id}"
             )
             result = openai_service.process_chat(user_id, ai_input_with_id)
+            logger.info(f"\n\n\nAI response: {result}")
             if result:
                 st.session_state.ai_response = result.get("response")
+                st.session_state.chat_id = result.get("chat_id")
                 st.session_state.ai_input = ""
                 st.session_state.ai_processing = False
                 st.session_state.ai_input_with_id = ""
@@ -55,6 +110,4 @@ def render_ai_chat():
     if st.session_state.ai_response:
         st.subheader("Response")
         st.markdown(st.session_state.ai_response)
-        if st.button("Clear Response"):
-            st.session_state.ai_response = None
-            st.rerun()
+        __collect_feedback(st.session_state.chat_id, st.session_state.ai_response)
