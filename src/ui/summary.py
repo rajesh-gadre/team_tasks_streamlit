@@ -1,0 +1,78 @@
+"""
+Summary page module for the Task Management System.
+Collects recent task updates and shows a concise summary.
+"""
+
+import os
+from datetime import datetime, timedelta
+
+import streamlit as st
+from langchain_community.chat_models import ChatOpenAI
+from langchain_core.messages import HumanMessage, SystemMessage
+
+from src.tasks.task_service import task_service
+
+
+def render_summary():
+    """Render a summary of task updates from the last week."""
+    st.header("Weekly Summary")
+    user_id = st.session_state.user.get('email')
+    tasks = task_service.get_all_tasks(user_id)
+    one_week_ago = datetime.now() - timedelta(days=7)
+    recent_updates = []
+
+    for task in tasks:
+        for update in task.updates or []:
+            ts = update.get('timestamp')
+            if isinstance(ts, str):
+                try:
+                    ts = datetime.fromisoformat(ts)
+                except ValueError:
+                    continue
+            if isinstance(ts, datetime) and ts >= one_week_ago:
+                recent_updates.append((ts, task.title, update.get('updateText')))
+
+    if not recent_updates:
+        st.info("No task updates in the last week.")
+        return
+
+    recent_updates.sort(key=lambda x: x[0], reverse=True)
+    summary = _summarize_updates(recent_updates)
+    if summary:
+        for line in summary.split("\n"):
+            clean_line = line.lstrip("- ").strip()
+            if clean_line:
+                st.markdown(f"- {clean_line}")
+    else:
+        st.write("Here are the latest updates:")
+        for ts, title, text in recent_updates[:5]:
+            st.markdown(f"- **{ts.strftime('%Y-%m-%d')}**: {text} - *{title}*")
+
+
+def _summarize_updates(updates):
+    """Return an LLM-generated summary for the given updates."""
+    api_key = os.environ.get("OPENAI_API_KEY")
+    if not api_key:
+        return None
+
+    try:
+        chat = ChatOpenAI(
+            api_key=api_key,
+            model=os.environ.get("OPENAI_MODEL", "gpt-4.1-mini"),
+            temperature=0
+        )
+        updates_text = "\n".join(
+            f"- {ts.strftime('%Y-%m-%d')}: {text} ({title})" for ts, title, text in updates
+        )
+        prompt = (
+            "Summarize the following task updates in 3-5 bullet points:\n"
+            f"{updates_text}"
+        )
+        messages = [
+            SystemMessage(content="You are a helpful assistant that summarizes task updates."),
+            HumanMessage(content=prompt),
+        ]
+        response = chat.invoke(messages)
+        return response.content.strip()
+    except Exception:
+        return None
