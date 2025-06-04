@@ -34,7 +34,8 @@ def test_add_task_valid(monkeypatch):
     result = service._add_task('user1', json.dumps(payload))
     assert result == {'success': True, 'task_id': 'task123'}
     assert captured['user_id'] == 'user1'
-    assert captured['task_data'] == payload
+    expected_payload = payload | {'status': 'active'}
+    assert captured['task_data'] == expected_payload
 
 def test_add_task_invalid(monkeypatch):
     service = create_service()
