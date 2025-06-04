@@ -25,6 +25,7 @@ team_tasks_streamlit/
 │   ├── EDD.md
 │   ├── deployment_guide.md
 │   └── user_guide.md
+├── examples/                   # Sample scripts
 └── src/                        # Source code
     ├── auth/                   # Authentication module
     ├── database/               # Database module
@@ -72,6 +73,10 @@ For detailed information, refer to the documentation folder:
 - `EDD.md`: Engineering Design Document
 - `deployment_guide.md`: Deployment instructions
 - `user_guide.md`: User manual
+
+## Examples
+
+Sample scripts demonstrating Google OAuth and Firestore queries are located in the `examples/` directory. Run them with `streamlit run examples/<script>.py`.
 
 ## License
 
