@@ -4,9 +4,14 @@ import json
 import logging
 import datetime
 from typing import Dict, Optional, Any, List
-from langchain_community.chat_models import ChatOpenAI
-from langchain_core.messages import SystemMessage, HumanMessage, AIMessage, ToolMessage
-from langchain_core.tools import tool
+from langchain_core.pydantic_v1 import BaseModel, Field
+from langchain_openai import ChatOpenAI
+from langchain_core.messages import SystemMessage, HumanMessage
+from typing import List, Optional, Dict, Any
+from datetime import datetime
+import logging
+import traceback
+
 from src.tasks.task_service import task_service
 from src.database.firestore import firestore_client
 from src.database.models import AIChat
@@ -42,7 +47,6 @@ class ModifiedTask(BaseModel):
 class TaskChanges(BaseModel):
     new_tasks: List[NewTask]
     modified_tasks: List[ModifiedTask]
-    summary: str
 
 
 class OpenAIService:
@@ -155,18 +159,51 @@ class OpenAIService:
             response = chat.invoke(messages)
             return response.content
         except Exception as e:
-            logger.error(f"Error calling OpenAI API: {str(e)}")
+            logger.error(f"FIRST CALL:Error calling OpenAI API: {str(e)}")
             raise
 
-    def _second_call(self, content1: str) -> str:
+    def _second_call(self, content1: str) -> TaskChanges:
         logger.info(f"\n\n\nCalling second-call {content1}")
-        return "TO-DO TO_DO XXX"
+        logger.debug(f"Entering _second_call. Received content1:\n{content1}")
+        system_prompt = "You are an AI assistant that processes a list of task descriptions and structures them into new and modified tasks. Strictly adhere to the provided Pydantic model for the output format. Ensure all required fields are present for each task. The input text is a list of proposed changes."
+        try:
+            chat = ChatOpenAI(
+                api_key=self.api_key,
+                model=self.model,
+                temperature=0.2 # Lower temperature for more deterministic structuring
+            )
+            messages = [
+                SystemMessage(content=system_prompt),
+                HumanMessage(content=content1)
+            ]
+            response = chat.with_structured_output(TaskChanges).invoke(messages)
+            logger.debug(f"Successfully structured output in _second_call: {response}")
+            return response
+        except Exception as e:
+            detailed_error_message = f"Error Type: {type(e).__name__}\n"
+            detailed_error_message += f"Error Args: {e.args}\n"
+            # Attempt to get more details if it's an OpenAI/HTTP error
+            if hasattr(e, 'response') and e.response is not None and hasattr(e.response, 'status_code'):
+                detailed_error_message += f"API Response Status: {e.response.status_code}\n"
+                detailed_error_message += f"API Response Headers: {e.response.headers}\n"
+                try:
+                    detailed_error_message += f"API Response JSON: {e.response.json()}\n"
+                except ValueError:
+                    detailed_error_message += f"API Response Text: {e.response.text}\n"
+            
+            logger.error(f"SECOND CALL: Error calling OpenAI API. Details:\n{detailed_error_message}\nContent1 that caused error (first 500 chars):\n{content1[:500]}\nTraceback:\n{traceback.format_exc()}")
+            raise
+
+    def __third_call(self, resp: TaskChanges) -> str:
+        logger.info(f"\n\n\nCalling third-call {resp}")
+        return "XXX TO_DO TO_DO TO_DO"
         
     def _call_openai(self, system_prompt: str, user_input: str, task_list: Dict[str, Any]) -> str:
         content1=self._first_call(system_prompt, user_input, task_list)
-        content2=self._second_call(content1)
-        logger.info(f"\n\n\nOpenAI response: {content2}")  
-        return content2
+        resp=self._second_call(content1)
+        final_response=self.__third_call(resp)
+        logger.info(f"\n\n\nOpenAI response: {final_response}")  
+        return final_response
     
     def _call_openai_old(self, system_prompt: str, user_input: str, task_list: Dict[str, Any]) -> str:
         try:
