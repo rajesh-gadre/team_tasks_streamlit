@@ -68,7 +68,7 @@ class OpenAIService:
             task_list = self._list_tasks(user_id)
             system_prompt = self._get_system_prompt()
             chat_id = self.db.create(self.collection, chat_data)
-            response = self._call_openai(system_prompt, input_text, task_list)
+            response = self._call_openai(user_id, system_prompt, input_text, task_list)
             self.db.update(self.collection, chat_id, {'Response': response})
             logger.info(f"Chat processed for user {user_id}")
             return {
@@ -194,15 +194,36 @@ class OpenAIService:
             logger.error(f"SECOND CALL: Error calling OpenAI API. Details:\n{detailed_error_message}\nContent1 that caused error (first 500 chars):\n{content1[:500]}\nTraceback:\n{traceback.format_exc()}")
             raise
 
-    def __third_call(self, resp: TaskChanges) -> str:
+    def __third_call(self, user_id: str, resp: TaskChanges) -> str:
+        """Create and update tasks based on OpenAI response."""
         logger.info(f"\n\n\nCalling third-call {resp}")
-        return "XXX TO_DO TO_DO TO_DO"
+        try:
+            # Create new tasks
+            for new_task in resp.new_tasks:
+                task_data = new_task.dict(exclude_none=True)
+                logger.debug(f"Creating task for {user_id}: {task_data}")
+                task_service.create_task(user_id, task_data)
+
+            # Update existing tasks
+            for mod_task in resp.modified_tasks:
+                task_id = mod_task.id
+                raw_data = mod_task.dict(exclude={'id'})
+                update_data = {k: v for k, v in raw_data.items() if v is not None}
+                logger.debug(
+                    f"Updating task {task_id} for {user_id} with {update_data}"
+                )
+                task_service.update_task(user_id, task_id, update_data)
+
+            return "Tasks updated successfully."
+        except Exception as e:
+            logger.error(f"THIRD CALL: Error updating tasks - {str(e)}")
+            return f"Error updating tasks: {str(e)}"
         
-    def _call_openai(self, system_prompt: str, user_input: str, task_list: Dict[str, Any]) -> str:
-        content1=self._first_call(system_prompt, user_input, task_list)
-        resp=self._second_call(content1)
-        final_response=self.__third_call(resp)
-        logger.info(f"\n\n\nOpenAI response: {final_response}")  
+    def _call_openai(self, user_id: str, system_prompt: str, user_input: str, task_list: Dict[str, Any]) -> str:
+        content1 = self._first_call(system_prompt, user_input, task_list)
+        resp = self._second_call(content1)
+        final_response = self.__third_call(user_id, resp)
+        logger.info(f"\n\n\nOpenAI response: {final_response}")
         return final_response
     
     def _call_openai_old(self, system_prompt: str, user_input: str, task_list: Dict[str, Any]) -> str:
