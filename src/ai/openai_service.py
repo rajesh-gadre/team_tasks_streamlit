@@ -102,13 +102,7 @@ class OpenAIService:
             task_data = json.loads(task_data_str)
             if "title" not in task_data:
                 return {"error": "Task title is required"}
-            task_id = task_service.create_task(
-                user_id=user_id,
-                title=task_data.get("title"),
-                description=task_data.get("description", ""),
-                notes=task_data.get("notes", ""),
-                due_date=task_data.get("due_date")
-            )
+            task_id = task_service.create_task(user_id, task_data)
             return {"success": True, "task_id": task_id}
         except Exception as e:
             logger.error(f"Error adding task: {str(e)}")
