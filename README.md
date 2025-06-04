@@ -85,9 +85,23 @@ For detailed information, refer to the documentation folder:
 - `deployment_guide.md`: Deployment instructions
 - `user_guide.md`: User manual
 
+
+## Running Tests
+
+Unit tests are located in the `tests/` directory. To run the full
+test suite, execute:
+
+```bash
+pytest
+```
+
+This requires the development dependencies listed in
+`requirements.txt`.
+
 ## Examples
 
 Sample scripts demonstrating Google OAuth and Firestore queries are located in the `examples/` directory. Run them with `streamlit run examples/<script>.py`.
+
 
 ## License
 
