@@ -2,22 +2,17 @@
 import os
 import json
 import logging
-import datetime
-from typing import Dict, Optional, Any, List
-import streamlit as st
-from langchain_core.pydantic_v1 import BaseModel, Field
-from langchain_openai import ChatOpenAI
-from langchain_core.messages import SystemMessage, HumanMessage
-from typing import List, Optional, Dict, Any
-from datetime import datetime
-import logging
 import traceback
+from typing import Any, Dict, List, Optional
+
+import streamlit as st
+from langchain_core.pydantic_v1 import BaseModel
+from langchain_core.messages import SystemMessage, HumanMessage
+from langchain_openai import ChatOpenAI
 
 from src.tasks.task_service import task_service
 from src.database.firestore import firestore_client
-from src.database.models import AIChat
 from src.ai.prompt_repository import prompt_repository
-from pydantic import BaseModel
 
 class FirestoreEncoder(json.JSONEncoder):
     def default(self, obj):
@@ -308,54 +303,6 @@ class OpenAIService:
 
         return False
     
-    def _call_openai_old(self, system_prompt: str, user_input: str, task_list: Dict[str, Any]) -> str:
-        try:
-            chat = ChatOpenAI(
-                api_key=self.api_key,
-                model=self.model,
-                temperature=0.7
-            )
-            clean_input = user_input.strip()
-            active_tasks_str = json.dumps(task_list.get('active', []), indent=2, cls=FirestoreEncoder)
-            completed_tasks_str = json.dumps(task_list.get('completed', []), indent=2, cls=FirestoreEncoder)
-            full_prompt = f"""{system_prompt}\n\nCurrent active tasks:\n{active_tasks_str}
-            Completed tasks:\n{completed_tasks_str}
-            Based on the user's request, determine what changes need to be made to the task list.
-            """
-            messages = [
-                SystemMessage(content=full_prompt),
-                HumanMessage(content=clean_input)
-            ]
-            logger.info(f"\n\n\nCalling OpenAI with structured output schema PYDANTIC-H tool")
-            try:
-                # Use LangChain's structured output parsing
-                response = chat.with_structured_output(TaskChanges).invoke(messages)
-
-                # Convert response (TaskChanges) to dict for easier handling
-                new_tasks = response.new_tasks
-                modified_tasks = response.modified_tasks
-                summary = response.summary
-
-                logger.info(f"Response completed")
-                logger.info(f"Response: {response}")
-                logger.info(f"Structured response: {response}")
-
-                for new_task in new_tasks:
-                    task_data_str = json.dumps(new_task, cls=FirestoreEncoder)
-                    self._add_task(user_id, task_data_str)
-                for modified_task in modified_tasks:
-                    task_id = modified_task.pop('id')
-                    update_data_str = json.dumps(modified_task, cls=FirestoreEncoder)
-                    self._update_task(user_id, task_id, update_data_str)
-                return summary
-            except Exception as e:
-                logger.error(f"Error with structured output: {str(e)}")
-                #response = chat.invoke(messages)
-                #return response.content
-                return None
-        except Exception as e:
-            logger.error(f"Error calling OpenAI API: {str(e)}")
-            return f"I encountered an error while processing your request: {str(e)}"
 
 # Create an instance for use in the application
 openai_service = OpenAIService()
