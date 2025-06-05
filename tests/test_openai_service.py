@@ -49,7 +49,13 @@ from ai.openai_service import OpenAIService, TaskChanges
 
 def test_call_openai(monkeypatch):
     monkeypatch.setenv('OPENAI_API_KEY', 'test-key')
-    monkeypatch.setattr('ai.openai_service.firestore_client', SimpleNamespace())
+    monkeypatch.setattr('ai.openai_service.get_client', lambda: SimpleNamespace())
+    dummy_ts = SimpleNamespace(
+        get_active_tasks=lambda uid: [],
+        get_completed_tasks=lambda uid: [],
+        get_deleted_tasks=lambda uid: []
+    )
+    monkeypatch.setattr('ai.openai_service.get_task_service', lambda: dummy_ts)
     service = OpenAIService()
 
     monkeypatch.setattr(service, '_first_call', lambda sp, ui, tl: 'content')

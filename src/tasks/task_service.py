@@ -6,7 +6,7 @@ import logging
 from datetime import datetime
 from typing import Dict, List, Optional, Any
 from src.database.models import Task, TaskStatus
-from src.tasks.task_repository import task_repository
+from src.tasks.task_repository import get_task_repository
 
 logger = logging.getLogger(__name__)
 
@@ -15,7 +15,7 @@ class TaskService:
     
     def __init__(self):
         """Initialize task service with task repository."""
-        self.repository = task_repository
+        self.repository = get_task_repository()
 
     def get_all_tasks(self, user_id: str) -> List[Task]:
         logger.info(f"Getting all tasks for user {user_id}")
@@ -178,5 +178,12 @@ class TaskService:
         logger.info(f"Completing task {task_id} for user {user_id}")
         return self.repository.complete_task(user_id, task_id)
 
-# Create an instance for use in the application
-task_service = TaskService()
+_task_service: Optional[TaskService] = None
+
+
+def get_task_service() -> TaskService:
+    """Return the TaskService singleton."""
+    global _task_service
+    if _task_service is None:
+        _task_service = TaskService()
+    return _task_service

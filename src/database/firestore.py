@@ -368,5 +368,13 @@ class FirestoreClient:
         
         return log_data
 
-# Create a singleton instance
-firestore_client = FirestoreClient()
+_firestore_client: Optional[FirestoreClient] = None
+
+
+def get_client() -> FirestoreClient:
+    """Return the Firestore client singleton, creating it if necessary."""
+    global _firestore_client
+    if _firestore_client is None:
+        _firestore_client = FirestoreClient()
+    return _firestore_client
+

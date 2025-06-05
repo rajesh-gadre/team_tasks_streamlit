@@ -6,7 +6,7 @@ import streamlit as st
 from datetime import datetime
 from typing import List, Callable
 from src.database.models import Task, TaskStatus
-from src.tasks.task_service import task_service
+from src.tasks.task_service import get_task_service
 
 def render_task_list(tasks: List[Task], status: str, on_refresh: Callable = None):
     """
@@ -106,7 +106,7 @@ def render_task_list(tasks: List[Task], status: str, on_refresh: Callable = None
             if status == TaskStatus.ACTIVE:
                 action_buttons = action_col.columns(3)
                 if action_buttons[0].button("✓", key=f"complete_{task.id}", help="Mark as completed"):
-                    if task_service.complete_task(user_id, task.id):
+                    if get_task_service().complete_task(user_id, task.id):
                         st.success("Task marked as completed!")
                         if on_refresh:
                             on_refresh()
@@ -116,7 +116,7 @@ def render_task_list(tasks: List[Task], status: str, on_refresh: Callable = None
                     st.session_state.editing_task = task
                     st.rerun()
                 if action_buttons[2].button("🗑", key=f"delete_{task.id}", help="Delete task"):
-                    if task_service.delete_task(user_id, task.id):
+                    if get_task_service().delete_task(user_id, task.id):
                         st.success("Task deleted!")
                         if on_refresh:
                             on_refresh()
@@ -125,7 +125,7 @@ def render_task_list(tasks: List[Task], status: str, on_refresh: Callable = None
             
             elif status == TaskStatus.COMPLETED:
                 if action_col.button("🗑", key=f"delete_{task.id}", help="Delete task"):
-                    if task_service.delete_task(user_id, task.id):
+                    if get_task_service().delete_task(user_id, task.id):
                         st.success("Task deleted!")
                         if on_refresh:
                             on_refresh()
@@ -133,7 +133,7 @@ def render_task_list(tasks: List[Task], status: str, on_refresh: Callable = None
                         st.error("Failed to delete task.")
             elif status == TaskStatus.DELETED:
                 if action_col.button("↩", key=f"restore_{task.id}", help="Restore task"):
-                    if task_service.restore_task(user_id, task.id):
+                    if get_task_service().restore_task(user_id, task.id):
                         st.success("Task restored!")
                         if on_refresh:
                             on_refresh()
@@ -190,7 +190,7 @@ def render_active_tasks():
         st.session_state.adding_task = True
         st.rerun()
     user_id = st.session_state.user.get('email')
-    tasks = task_service.get_active_tasks(user_id)
+    tasks = get_task_service().get_active_tasks(user_id)
     def refresh_tasks():
         st.session_state.refresh_active = True
         st.rerun()
@@ -200,7 +200,7 @@ def render_completed_tasks():
     """Render completed tasks list with refresh capability."""
     st.header("Completed Tasks")
     user_id = st.session_state.user.get('email')
-    tasks = task_service.get_completed_tasks(user_id)
+    tasks = get_task_service().get_completed_tasks(user_id)
     def refresh_tasks():
         st.session_state.refresh_completed = True
         st.rerun()
@@ -210,7 +210,7 @@ def render_deleted_tasks():
     """Render deleted tasks list with refresh capability."""
     st.header("Deleted Tasks")
     user_id = st.session_state.user.get('email')
-    tasks = task_service.get_deleted_tasks(user_id)
+    tasks = get_task_service().get_deleted_tasks(user_id)
     def refresh_tasks():
         st.session_state.refresh_deleted = True
         st.rerun()

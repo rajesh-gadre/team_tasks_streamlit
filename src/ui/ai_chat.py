@@ -5,9 +5,9 @@ Handles rendering of AI chat interface and interactions.
 import streamlit as st
 import logging
 from typing import Dict, Any
-from src.ai.openai_service import openai_service, TaskChanges
+from src.ai.openai_service import get_openai_service, TaskChanges
 import traceback
-from src.database.firestore import firestore_client
+from src.database.firestore import get_client
 
 logger = logging.getLogger(__name__)
 
@@ -48,7 +48,7 @@ def __collect_feedback(chat_id: str, resp: TaskChanges) -> bool:
         if submit:
             logger.info(f"Feedback submitted for chat_id {chat_id}")
             st.session_state[feedback_key] = True
-            firestore_client.update(
+            get_client().update(
                 'AI_chats',
                 chat_id,
                 {"feedbackRating": rating, "feedbackText": text},
@@ -81,7 +81,7 @@ def render_ai_chat():
             ai_input_with_id = st.session_state.get(
                 "ai_input_with_id", f"{st.session_state.ai_input}\n\nuser_id: {user_id}"
             )
-            result = openai_service.process_chat(user_id, ai_input_with_id)
+            result = get_openai_service().process_chat(user_id, ai_input_with_id)
             logger.info(f"\n\n\nAI response: {result}")
             if result:
                 st.session_state.ai_response = result.get("response")

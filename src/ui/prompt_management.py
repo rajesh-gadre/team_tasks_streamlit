@@ -1,6 +1,6 @@
 """UI components for managing AI prompts."""
 import streamlit as st
-from src.ai.prompt_service import prompt_service
+from src.ai.prompt_service import get_prompt_service
 from src.database.models import PromptStatus
 
 
@@ -9,7 +9,7 @@ def render_prompt_management():
     st.header("Prompt Management")
 
     try:
-        prompts = prompt_service.get_all_prompts()
+        prompts = get_prompt_service().get_all_prompts()
     except Exception as e:
         st.error(f"Error loading prompts: {e}")
         return
@@ -29,7 +29,7 @@ def render_prompt_management():
             else:
                 data = {"text": text}
                 try:
-                    if prompt_service.update_prompt(prompt.id, data):
+                    if get_prompt_service().update_prompt(prompt.id, data):
                         st.success("Prompt updated successfully!")
                         st.rerun()
                     else:
