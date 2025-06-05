@@ -17,7 +17,7 @@ def render_summary():
     """Render a summary of task updates from the last week."""
     st.header("Weekly Summary")
     user_id = st.session_state.user.get('email')
-    tasks = get_task_service().get_all_tasks(user_id)
+    tasks = get_task_service().get_all_tasks_for_user(user_id)
     one_week_ago = datetime.now(datetime.utcnow().astimezone().tzinfo) - timedelta(days=7)
     recent_updates = []
 

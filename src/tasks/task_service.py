@@ -17,9 +17,10 @@ class TaskService:
         """Initialize task service with task repository."""
         self.repository = get_task_repository()
 
-    def get_all_tasks(self, user_id: str) -> List[Task]:
+    def get_all_tasks_for_user(self, user_id: str) -> List[Task]:
+        """Return all tasks belonging to the given user."""
         logger.info(f"Getting all tasks for user {user_id}")
-        return self.repository.get_all_tasks(user_id)
+        return self.repository.get_all_tasks_for_user(user_id)
     
     def get_active_tasks(self, user_id: str) -> List[Task]:
         """
