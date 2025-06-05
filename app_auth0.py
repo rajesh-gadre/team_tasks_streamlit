@@ -33,6 +33,26 @@ from src.ui.ai_chat import render_ai_chat
 from src.ui.prompt_management import render_prompt_management
 from src.ui.summary import render_summary
 
+
+def logout_user():
+    # Clear Streamlit session state
+    for key in list(st.session_state.keys()):
+        del st.session_state[key]
+    # Build the Auth0 logout URL
+    auth0_domain = st.secrets["AUTH0_DOMAIN"]
+    client_id = st.secrets["AUTH0_CLIENT_ID"]
+    return_to = st.secrets["AUTH0_CALLBACK_URL"]
+    logout_url = (
+        f"https://{auth0_domain}/v2/logout"
+        f"?client_id={client_id}"
+        f"&returnTo={return_to}"
+    )
+    # Redirect the browser to the Auth0 logout endpoint
+    st.markdown(
+        f'<meta http-equiv="refresh" content="0; url={logout_url}">',
+        unsafe_allow_html=True
+    )
+
 st.set_page_config(
     page_title="Task Management System",
     page_icon="✅",
@@ -165,9 +185,8 @@ def main():
                 
         with st.sidebar:
             if st.button("🚪 **Logout**", help="Sign out of your account"):
-                st.session_state.user_info = None
                 logout_user()
-                st.rerun()
+                st.stop()
     
     elif "code" in query_params and "user_info" not in st.session_state:
         user_info = auth.get_user_info(query_params, st.session_state.get("state"))
@@ -186,7 +205,7 @@ def render_login_page():
     st.session_state.state = state
     st.markdown(
         f'''
-        <a href="{auth_url}" target="_blank" rel="noopener noreferrer">
+        <a href="{auth_url}" target="_self">
             <button style="
                 background-color: #eb5424;
                 color: white;
