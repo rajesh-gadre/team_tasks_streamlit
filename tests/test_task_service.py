@@ -47,3 +47,11 @@ def test_delete_restore_complete(monkeypatch):
     repo.restore_task.assert_called_once_with('u1', 't1')
     service.complete_task('u1', 't1')
     repo.complete_task.assert_called_once_with('u1', 't1')
+
+
+def test_get_all_tasks_for_user(monkeypatch):
+    service, repo = _setup_service(monkeypatch)
+    repo.get_all_tasks_for_user.return_value = ['task1']
+    result = service.get_all_tasks_for_user('u1')
+    assert result == ['task1']
+    repo.get_all_tasks_for_user.assert_called_once_with('u1')
