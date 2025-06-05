@@ -8,9 +8,9 @@ import streamlit as st
 import uuid
 from dotenv import load_dotenv
 from src.auth.auth0_auth import Auth0Auth
-from src.ai.openai_service import delete_all_chats, get_all_chats
-from src.tasks.task_service import task_service
-from src.ai.prompt_repository import prompt_repository
+from src.ai.openai_service import delete_all_chats_one_by_one, get_all_chats
+from src.tasks.task_service import get_task_service
+from src.ai.prompt_repository import get_prompt_repository
 import pandas as pd
 
 load_dotenv()
