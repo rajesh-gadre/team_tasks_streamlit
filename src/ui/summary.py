@@ -10,14 +10,14 @@ import streamlit as st
 from langchain_community.chat_models import ChatOpenAI
 from langchain_core.messages import HumanMessage, SystemMessage
 
-from src.tasks.task_service import task_service
+from src.tasks.task_service import get_task_service
 
 
 def render_summary():
     """Render a summary of task updates from the last week."""
     st.header("Weekly Summary")
     user_id = st.session_state.user.get('email')
-    tasks = task_service.get_all_tasks_for_user(user_id)
+    tasks = get_task_service().get_all_tasks_for_user(user_id)
     one_week_ago = datetime.now(datetime.utcnow().astimezone().tzinfo) - timedelta(days=7)
     recent_updates = []
 

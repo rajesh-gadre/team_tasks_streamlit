@@ -9,7 +9,7 @@ from tasks.task_service import TaskService
 
 def _setup_service(monkeypatch):
     mock_repo = MagicMock()
-    monkeypatch.setattr('tasks.task_service.task_repository', mock_repo)
+    monkeypatch.setattr('tasks.task_service.get_task_repository', lambda: mock_repo)
     service = TaskService()
     return service, mock_repo
 

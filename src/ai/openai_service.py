@@ -10,9 +10,11 @@ from langchain_core.pydantic_v1 import BaseModel
 from langchain_core.messages import SystemMessage, HumanMessage
 from langchain_openai import ChatOpenAI
 
-from src.tasks.task_service import task_service
-from src.database.firestore import firestore_client
-from src.ai.prompt_repository import prompt_repository
+from src.tasks.task_service import get_task_service
+from src.database.firestore import get_client
+from src.database.models import AIChat
+from src.ai.prompt_repository import get_prompt_repository
+from pydantic import BaseModel
 
 class FirestoreEncoder(json.JSONEncoder):
     def default(self, obj):
@@ -46,7 +48,7 @@ class TaskChanges(BaseModel):
 
 def delete_all_chats():
     try:
-        firestore_client.delete_all('AI_chats')
+        get_client().delete_all('AI_chats')
         logger.info("All AI chats deleted")
     except Exception as e:
         logger.error(f"Error deleting all AI chats: {str(e)}")
@@ -54,7 +56,7 @@ def delete_all_chats():
 
 def get_all_chats():
     try:
-        return firestore_client.get_all('AI_chats')
+        return get_client().get_all('AI_chats')
     except Exception as e:
         logger.error(f"Error getting all AI chats: {str(e)}")
         raise
@@ -67,7 +69,7 @@ class OpenAIService:
         if not self.api_key:
             logger.error("OpenAI API key not found in environment variables")
             raise ValueError("Missing OpenAI API key")
-        self.db = firestore_client
+        self.db = get_client()
         self.collection = 'AI_chats'
     
     def process_chat(self, user_id: str, input_text: str) -> Dict[str, Any]:
@@ -95,9 +97,10 @@ class OpenAIService:
     
     def _list_tasks(self, user_id: str):
         try:
-            active_tasks = task_service.get_active_tasks(user_id)
-            completed_tasks = task_service.get_completed_tasks(user_id)
-            deleted_tasks = task_service.get_deleted_tasks(user_id)
+            ts = get_task_service()
+            active_tasks = ts.get_active_tasks(user_id)
+            completed_tasks = ts.get_completed_tasks(user_id)
+            deleted_tasks = ts.get_deleted_tasks(user_id)
             logger.info(f"Listing tasks for user {user_id}: Active:{active_tasks}, Completed:{completed_tasks}, Deleted:{deleted_tasks}")
             active_tasks_dict = [task.to_dict() for task in active_tasks]
             completed_tasks_dict = [task.to_dict() for task in completed_tasks]
@@ -117,7 +120,8 @@ class OpenAIService:
             if "title" not in task_data:
                 return {"error": "Task title is required"}
 
-            #task_id = task_service.create_task(user_id, task_data)
+            ts = get_task_service()
+            #task_id = ts.create_task(user_id, task_data)
             task_dict = {
                 "title": task_data.get("title"),
                 "description": task_data.get("description", ""),
@@ -125,7 +129,7 @@ class OpenAIService:
                 "due_date": task_data.get("due_date"),
                 "status":"active"
             }
-            task_id = task_service.create_task(user_id, task_dict)
+            task_id = ts.create_task(user_id, task_dict)
 
             return {"success": True, "task_id": task_id}
         except Exception as e:
@@ -135,7 +139,7 @@ class OpenAIService:
     def _update_task(self, user_id: str, task_id: str, update_data_str: str):
         try:
             update_data = json.loads(update_data_str)
-            task_service.update_task(user_id, task_id, update_data)
+            get_task_service().update_task(user_id, task_id, update_data)
             return {"success": True}
         except Exception as e:
             logger.error(f"Error updating task: {str(e)}")
@@ -144,7 +148,7 @@ class OpenAIService:
     def _get_system_prompt(self) -> str:
         DEFAULT_PROMPT = """You are an expert Task manager. Given the user input which includes user's current task-list, first understand the user's goal and figure out what changes need to be made to user's task list."""
         try:
-            prompt = prompt_repository.get_active_prompt("AI_Tasks")
+            prompt = get_prompt_repository().get_active_prompt("AI_Tasks")
             if prompt:
                 return prompt.text
             else:
@@ -217,10 +221,11 @@ class OpenAIService:
         logger.info(f"\n\n\nCalling third-call {resp}")
         try:
             # Create new tasks
+            ts = get_task_service()
             for new_task in resp.new_tasks:
                 task_data = new_task.dict(exclude_none=True)
                 logger.debug(f"Creating task for {user_id}: {task_data}")
-                task_service.create_task(user_id, task_data)
+                ts.create_task(user_id, task_data)
 
             # Update existing tasks
             for mod_task in resp.modified_tasks:
@@ -230,7 +235,7 @@ class OpenAIService:
                 logger.debug(
                     f"Updating task {task_id} for {user_id} with {update_data}"
                 )
-                task_service.update_task(user_id, task_id, update_data)
+                ts.update_task(user_id, task_id, update_data)
 
             return resp
         except Exception as e:
@@ -304,5 +309,12 @@ class OpenAIService:
         return False
     
 
-# Create an instance for use in the application
-openai_service = OpenAIService()
+_openai_service: Optional[OpenAIService] = None
+
+
+def get_openai_service() -> OpenAIService:
+    """Return the OpenAIService singleton."""
+    global _openai_service
+    if _openai_service is None:
+        _openai_service = OpenAIService()
+    return _openai_service

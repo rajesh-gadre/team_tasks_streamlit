@@ -5,7 +5,7 @@ from datetime import datetime
 # ensure src is on path
 sys.path.append(str(Path(__file__).resolve().parents[1] / 'src'))
 
-from database.firestore import firestore_client
+from database.firestore import FirestoreClient
 from firebase_admin.firestore import SERVER_TIMESTAMP
 
 
@@ -25,7 +25,8 @@ def test_prepare_data_for_logging():
         'custom': CustomObject()
     }
 
-    result = firestore_client._prepare_data_for_logging(data)
+    fc = FirestoreClient.__new__(FirestoreClient)
+    result = fc._prepare_data_for_logging(data)
 
     assert result['timestamp'] == '2024-01-01T12:00:00'
     assert result['server_ts'] == '<SERVER_TIMESTAMP>'

@@ -5,7 +5,7 @@ Handles data access operations for tasks in Firestore.
 import logging
 from datetime import datetime
 from typing import Dict, List, Optional, Any
-from src.database.firestore import firestore_client
+from src.database.firestore import get_client
 from src.database.models import Task, TaskStatus
 
 logger = logging.getLogger(__name__)
@@ -16,7 +16,7 @@ class TaskRepository:
     def __init__(self):
         """Initialize task repository with Firestore client."""
         self.collection = 'tasks'
-        self.db = firestore_client
+        self.db = get_client()
 
     def get_all_tasks(self) -> List[Task]:
         """Return all tasks for all users."""
@@ -280,4 +280,12 @@ class TaskRepository:
         except Exception as e:
             logger.error(f"Error completing task {task_id}: {str(e)}")
             raise
-task_repository = TaskRepository()
+_task_repository: Optional[TaskRepository] = None
+
+
+def get_task_repository() -> TaskRepository:
+    """Return the TaskRepository singleton."""
+    global _task_repository
+    if _task_repository is None:
+        _task_repository = TaskRepository()
+    return _task_repository

@@ -5,7 +5,7 @@ Handles data access operations for AI prompts in Firestore.
 import logging
 from typing import Dict, List, Optional, Any
 
-from src.database.firestore import firestore_client
+from src.database.firestore import get_client
 from src.database.models import AIPrompt, PromptStatus
 
 # Configure logging
@@ -17,7 +17,7 @@ class PromptRepository:
     def __init__(self):
         """Initialize prompt repository with Firestore client."""
         self.collection = 'AI_prompts'
-        self.db = firestore_client
+        self.db = get_client()
     
     def get_active_prompt(self, prompt_name: str) -> Optional[AIPrompt]:
         """
@@ -128,5 +128,12 @@ class PromptRepository:
             logger.error(f"Error deleting prompt {prompt_id}: {str(e)}")
             raise
 
-# Create an instance for use in the application
-prompt_repository = PromptRepository()
+_prompt_repository: Optional[PromptRepository] = None
+
+
+def get_prompt_repository() -> PromptRepository:
+    """Return the PromptRepository singleton."""
+    global _prompt_repository
+    if _prompt_repository is None:
+        _prompt_repository = PromptRepository()
+    return _prompt_repository
