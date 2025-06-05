@@ -73,6 +73,16 @@ class TaskService:
         """
         logger.info(f"Getting task {task_id} for user {user_id}")
         return self.repository.get_task(user_id, task_id)
+
+    def get_all_tasks(self) -> List[Task]:
+        """
+        Get all tasks for all users.
+            
+        Returns:
+            List of Task objects
+        """
+        logger.info(f"Getting all tasks for all users")
+        return self.repository.get_all_tasks()
     
     def create_task(self, user_id: str, task_data: Dict[str, Any]) -> str:
         """

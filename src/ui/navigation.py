@@ -64,7 +64,7 @@ def render_navigation():
 def render_sidebar():
     """Render sidebar with user info and logout button."""
     with st.sidebar:
-        st.title("Task Management")
+        st.title("TASK MANAGEMENT")
         
         # Show user info if authenticated
         if st.session_state.get('is_authenticated', False):

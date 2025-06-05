@@ -8,7 +8,10 @@ import streamlit as st
 import uuid
 from dotenv import load_dotenv
 from aiclub_auth_lib.oauth import AIClubGoogleAuth
-from src.ai.openai_service import delete_all_chats
+from src.ai.openai_service import delete_all_chats, get_all_chats
+from src.tasks.task_service import task_service
+from src.ai.prompt_repository import prompt_repository
+import pandas as pd
 
 load_dotenv()
 for key, value in st.secrets.items():
@@ -102,9 +105,35 @@ def main():
             st.header("Debug Information")
             with st.expander("Session State"):
                 debug_session_state()
+            with st.expander("AI Chats"):
+                df=pd.DataFrame(get_all_chats())
+                st.dataframe(df)
+            with st.expander("Tasks"):
+                tasks=task_service.get_all_tasks()
+                # Convert tasks to a simplified dict format that can be displayed in a dataframe
+                task_list=[{
+                    'id': task.id,
+                    'userId': task.user_id,
+                    'title': task.title,
+                    'status': task.status,
+                    'description': task.description,
+                    'dueDate': task.due_date.isoformat() if hasattr(task.due_date, 'isoformat') else task.due_date,
+                    'createdAt': task.created_at.isoformat() if hasattr(task.created_at, 'isoformat') else task.created_at,
+                    'updatedAt': task.updated_at.isoformat() if hasattr(task.updated_at, 'isoformat') else task.updated_at,
+                    'notes': task.notes,
+                    'updates_count': len(task.updates) if task.updates else 0
+                } for task in tasks]
+                df=pd.DataFrame(task_list) 
+                st.dataframe(df)
+            with st.expander("Prompts"):
+                prompts=prompt_repository.get_all_prompts()
+                prompt_list=[prompt.to_dict() for prompt in prompts]
+                df=pd.DataFrame(prompt_list)
+                st.dataframe(df)
             with st.expander("Delete AI Chats"):
                 if st.button("Delete AI Chats"):
                     delete_all_chats()
+                    
         
         # Define pages for navigation
         active_page = st.Page(active_tasks_page, title="Active Tasks", icon="✅", default=True)
@@ -150,7 +179,7 @@ def main():
 
 # WAS @st.dialog("Please log in with your Google account")
 def render_login_page():
-    st.title("Welcome to Task Management System")
+    st.title("Welcome to TASK MANAGEMENT SYSTEM")
     st.write("Please log in to access your tasks.")
     logger.debug("Login page accessed")
     auth_url, state = auth.get_authorization_url()

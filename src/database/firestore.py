@@ -161,6 +161,14 @@ class FirestoreClient:
             # Log the error
             logger.error(f"DB ERROR [READ] - Collection: {collection} - Document ID: {doc_id} - Error: {str(e)}")
             raise
+
+    def get_all(self, collection: str):
+        try:
+            docs = self.db.collection(collection).stream()
+            return [doc.to_dict() for doc in docs]
+        except Exception as e:
+            logger.error(f"DB ERROR [GET ALL] - Collection: {collection} - Error: {str(e)}")
+            raise
     
     def update(self, collection: str, doc_id: str, data: Dict[str, Any]) -> bool:
         """

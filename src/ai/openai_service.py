@@ -57,6 +57,13 @@ def delete_all_chats():
         logger.error(f"Error deleting all AI chats: {str(e)}")
         raise
 
+def get_all_chats():
+    try:
+        return firestore_client.get_all('AI_chats')
+    except Exception as e:
+        logger.error(f"Error getting all AI chats: {str(e)}")
+        raise
+
 
 class OpenAIService:
     def __init__(self):
