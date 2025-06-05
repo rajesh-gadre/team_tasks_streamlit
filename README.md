@@ -89,14 +89,18 @@ For detailed information, refer to the documentation folder:
 ## Running Tests
 
 Unit tests are located in the `tests/` directory. To run the full
-test suite, execute:
+test suite locally, install the required dependencies and execute:
 
 ```bash
+pip install -r requirements.txt
 pytest
 ```
 
-This requires the development dependencies listed in
-`requirements.txt`.
+The repository also provides automated test execution using
+[GitHub Actions](https://github.com/features/actions). Every push and
+pull request triggers the workflow defined in
+`.github/workflows/test.yml`, which installs the dependencies and runs
+`pytest` in a clean environment.
 
 ## Examples
 
