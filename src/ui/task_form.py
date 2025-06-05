@@ -6,9 +6,10 @@ import streamlit as st
 from datetime import datetime
 from typing import Dict, Optional, Any
 from src.database.models import Task
-from src.tasks.task_service import task_service
+from src.tasks.task_service import get_task_service 
 
 def render_task_form(task: Optional[Task] = None):
+    task_service = get_task_service()
     """
     Render a form for creating or editing a task.
     

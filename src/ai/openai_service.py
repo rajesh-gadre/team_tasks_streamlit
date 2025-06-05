@@ -46,7 +46,7 @@ class TaskChanges(BaseModel):
     new_tasks: List[NewTask]
     modified_tasks: List[ModifiedTask]
 
-def delete_all_chats():
+def delete_all_chats_one_by_one(n: int):
     try:
         client = get_client()
         source_collection = 'AI_chats'
@@ -59,6 +59,8 @@ def delete_all_chats():
             client.db.collection(archive_collection).document(doc.id).set(data)
             doc.reference.delete()
             count += 1
+            if count >= n:
+                break
 
         logger.info(
             f"Archived and deleted {count} documents from {source_collection}"
@@ -265,7 +267,7 @@ class OpenAIService:
         if spinner is None:
             from contextlib import nullcontext
             spinner = nullcontext
-        with spinner("Processing your question..."):
+        with spinner("Processing your request..."):
             content1 = self._first_call(system_prompt, user_input, task_list)
             resp = self._second_call(content1)
             final_response = self.__third_call(user_id, resp)

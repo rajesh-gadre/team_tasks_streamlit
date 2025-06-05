@@ -8,9 +8,9 @@ import streamlit as st
 import uuid
 from dotenv import load_dotenv
 from aiclub_auth_lib.oauth import AIClubGoogleAuth
-from src.ai.openai_service import delete_all_chats, get_all_chats
-from src.tasks.task_service import task_service
-from src.ai.prompt_repository import prompt_repository
+from src.ai.openai_service import delete_all_chats_one_by_one, get_all_chats
+from src.tasks.task_service import get_task_service
+from src.ai.prompt_repository import get_prompt_repository
 import pandas as pd
 
 load_dotenv()
@@ -109,6 +109,7 @@ def main():
                 df=pd.DataFrame(get_all_chats())
                 st.dataframe(df)
             with st.expander("Tasks"):
+                task_service = get_task_service()
                 tasks=task_service.get_all_tasks()
                 # Convert tasks to a simplified dict format that can be displayed in a dataframe
                 task_list=[{
@@ -126,13 +127,15 @@ def main():
                 df=pd.DataFrame(task_list) 
                 st.dataframe(df)
             with st.expander("Prompts"):
+                prompt_repository = get_prompt_repository()
                 prompts=prompt_repository.get_all_prompts()
                 prompt_list=[prompt.to_dict() for prompt in prompts]
                 df=pd.DataFrame(prompt_list)
                 st.dataframe(df)
             with st.expander("Delete AI Chats"):
-                if st.button("Delete AI Chats"):
-                    delete_all_chats()
+                delete_count = st.number_input("Delete count", min_value=1, max_value=100, value=1)
+                if st.button("Delete AI Chats one-by-one"):
+                    delete_all_chats_one_by_one(delete_count)
                     
         
         # Define pages for navigation

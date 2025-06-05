@@ -98,7 +98,7 @@ def render_ai_chat():
 
     with st.form(key="ai_chat_form"):
         ai_input = st.text_area(
-            "Your question", value=st.session_state.ai_input, height=100
+            "Your request", value=st.session_state.ai_input, height=100
         )
         submit_button = st.form_submit_button("Submit")
 
