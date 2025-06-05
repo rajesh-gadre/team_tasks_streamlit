@@ -48,10 +48,25 @@ class TaskChanges(BaseModel):
 
 def delete_all_chats():
     try:
-        get_client().delete_all('AI_chats')
-        logger.info("All AI chats deleted")
+        client = get_client()
+        source_collection = 'AI_chats'
+        archive_collection = 'AI_chats_archive'
+
+        docs = client.db.collection(source_collection).stream()
+        count = 0
+        for doc in docs:
+            data = doc.to_dict()
+            client.db.collection(archive_collection).document(doc.id).set(data)
+            doc.reference.delete()
+            count += 1
+
+        logger.info(
+            f"Archived and deleted {count} documents from {source_collection}"
+        )
     except Exception as e:
-        logger.error(f"Error deleting all AI chats: {str(e)}")
+        logger.error(
+            f"Error archiving and deleting AI chats: {str(e)}"
+        )
         raise
 
 def get_all_chats():
