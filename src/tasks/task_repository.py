@@ -19,11 +19,22 @@ class TaskRepository:
         self.db = firestore_client
 
     def get_all_tasks(self) -> List[Task]:
+        """Return all tasks for all users."""
         try:
             tasks_data = self.db.query(self.collection, order_by='updatedAt', direction='DESCENDING')
             return [Task.from_dict(task_data) for task_data in tasks_data]
         except Exception as e:
             logger.error(f"Error getting all tasks: {str(e)}")
+            raise
+
+    def get_all_tasks_for_user(self, user_id: str) -> List[Task]:
+        """Return all tasks belonging to the given user."""
+        try:
+            filters = [('userId', '==', user_id)]
+            tasks_data = self.db.query(self.collection, filters=filters, order_by='updatedAt', direction='DESCENDING')
+            return [Task.from_dict(task_data) for task_data in tasks_data]
+        except Exception as e:
+            logger.error(f"Error getting all tasks for user {user_id}: {str(e)}")
             raise
     
     def get_active_tasks(self, user_id: str) -> List[Task]:
