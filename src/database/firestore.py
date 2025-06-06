@@ -8,6 +8,8 @@ import logging
 from datetime import datetime
 from typing import Dict, List, Optional, Any, Union
 
+from google.cloud.firestore_v1 import FieldFilter
+
 import firebase_admin
 from firebase_admin import credentials, firestore
 from firebase_admin.firestore import SERVER_TIMESTAMP
@@ -284,7 +286,7 @@ class FirestoreClient:
             # Apply filters if provided
             if filters:
                 for field, op, value in filters:
-                    query_ref = query_ref.where(field, op, value)
+                    query_ref = query_ref.where(filter=FieldFilter(field, op, value))
             
             # Apply ordering if provided
             if order_by:
@@ -315,7 +317,7 @@ class FirestoreClient:
                 except Exception as e_to_dict:
                     logger.error(f"DB RESPONSE [QUERY] - Error calling to_dict() for doc ID: {doc.id}. Error: {str(e_to_dict)}. Traceback: {traceback.format_exc()}. Skipping.")
             
-            logger.info(f"DB RESPONSE [QUERY] - Finished streaming. Total docs processed from stream: {count}. Total valid results: {len(results)} for collection '{collection}'")
+            logger.debug(f"DB RESPONSE [QUERY] - Finished streaming. Total docs processed from stream: {count}. Total valid results: {len(results)} for collection '{collection}'")
             
             if results and len(results) <= 10:
                 logger.debug(f"DB RESPONSE DATA [QUERY] - First 10 valid result IDs: {[doc_data.get('id', 'unknown') for doc_data in results[:10]]}")
