@@ -45,6 +45,7 @@ from src.ui.task_form import render_task_form
 from src.ui.ai_chat import render_ai_chat
 from src.ui.prompt_management import render_prompt_management
 from src.ui.summary import render_summary
+from src.ui.changelog import render_changelog
 
 st.set_page_config(
     page_title="Task Management System",
@@ -130,6 +131,9 @@ def main():
         def summary_page():
             render_summary()
 
+        def changelog_page():
+            render_changelog()
+
         def eval_candidates_page():
             from src.ui.eval_candidates import render_eval_candidates
             render_eval_candidates()
@@ -212,6 +216,7 @@ def main():
             prompt_management_page, title="Prompt Management", icon="📝"
         )
         summary_nav = st.Page(summary_page, title="Summary", icon="📋")
+        changelog_nav = st.Page(changelog_page, title="ChangeLog", icon="📜")
         eval_candidates_nav = st.Page(
             eval_candidates_page, title="Eval Candidates", icon="🧪"
         )
@@ -219,7 +224,7 @@ def main():
 
         user_pages = [active_page, completed_page, deleted_page, ai_page]
 
-        navigation_pages = [summary_nav]
+        navigation_pages = [summary_nav, changelog_nav]
         admin_pages = [prompt_page, eval_candidates_nav, debug_page_nav]
 
         # Create navigation
