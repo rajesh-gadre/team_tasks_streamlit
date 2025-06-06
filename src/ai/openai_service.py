@@ -104,7 +104,7 @@ class OpenAIService:
             if response is None:
                 return None
             self.db.update(self.collection, chat_id, {'Response': json.dumps(response.dict(), cls=FirestoreEncoder)})
-            logger.info(f"Chat processed for user {user_id}")
+            logger.debug(f"Chat processed for user {user_id}")
             return {
                 'chat_id': chat_id,
                 'response': response
@@ -120,7 +120,7 @@ class OpenAIService:
             active_tasks = ts.get_active_tasks(user_id)
             completed_tasks = ts.get_completed_tasks(user_id)
             deleted_tasks = ts.get_deleted_tasks(user_id)
-            logger.info(f"Listing tasks for user {user_id}: Active:{active_tasks}, Completed:{completed_tasks}, Deleted:{deleted_tasks}")
+            logger.debug(f"Listing tasks for user {user_id}: Active:{active_tasks}, Completed:{completed_tasks}, Deleted:{deleted_tasks}")
             active_tasks_dict = [task.to_dict() for task in active_tasks]
             completed_tasks_dict = [task.to_dict() for task in completed_tasks]
             deleted_tasks_dict = [task.to_dict() for task in deleted_tasks]
@@ -173,6 +173,7 @@ class OpenAIService:
         )
         try:
             prompt = get_prompt_repository().get_active_prompt("AI_Tasks")
+            logger.info(f"Active AI_Tasks prompt: {prompt}")
             if prompt:
                 return prompt
             logger.warning("No active AI_Tasks prompt found, using fallback")
@@ -199,7 +200,7 @@ class OpenAIService:
                 SystemMessage(content=full_prompt),
                 HumanMessage(content=clean_input)
             ]
-            logger.info(f"\n\n\nCalling OpenAI with structured output schema PYDANTIC-H tool")
+            logger.debug(f"\n\n\nCalling OpenAI with structured output schema PYDANTIC-H tool")
             response = chat.invoke(messages)
             return response.content
         except Exception as e:
@@ -207,7 +208,7 @@ class OpenAIService:
             raise
 
     def _second_call(self, content1: str) -> TaskChanges:
-        logger.info(f"\n\n\nCalling second-call {content1}")
+        logger.debug(f"\n\n\nCalling second-call {content1}")
         logger.debug(f"Entering _second_call. Received content1:\n{content1}")
         system_prompt = "You are an AI assistant that processes a list of task descriptions and structures them into new and modified tasks. Strictly adhere to the provided Pydantic model for the output format. Ensure all required fields are present for each task. The input text is a list of proposed changes."
         try:
@@ -240,7 +241,7 @@ class OpenAIService:
 
     def __third_call(self, user_id: str, resp: TaskChanges) -> TaskChanges:
         """Create and update tasks based on OpenAI response."""
-        logger.info(f"\n\n\nCalling third-call {resp}")
+        logger.debug(f"\n\n\nCalling third-call {resp}")
         try:
             # Create new tasks
             ts = get_task_service()
@@ -277,7 +278,7 @@ class OpenAIService:
             resp = self._second_call(content1)
             final_response = self.__third_call(user_id, resp)
 
-        logger.info(f"\n\n\nOpenAI response: {final_response}")
+        logger.debug(f"\n\n\nOpenAI response: {final_response}")
         return final_response
 
     def __collect_feedback(self, chat_id: str, resp: TaskChanges) -> bool:
