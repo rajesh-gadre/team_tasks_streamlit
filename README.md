@@ -74,6 +74,16 @@ GOOGLE_REDIRECT_URI=your-google-redirect-uri
 # Logging
 LOG_LEVEL=INFO  # DEBUG, INFO, WARNING, ERROR, CRITICAL
 JWT_SECRET_KEY=your-jwt-secret-key
+AUTH_TYPE=google
+```
+
+If `AUTH_TYPE` is set to `auth0`, provide the following additional variables:
+
+```bash
+AUTH0_DOMAIN=your-auth0-domain
+AUTH0_CLIENT_ID=your-auth0-client-id
+AUTH0_CLIENT_SECRET=your-auth0-client-secret
+AUTH0_CALLBACK_URL=your-auth0-callback-url
 ```
 
 ## Documentation
