@@ -28,6 +28,21 @@ def render_task_list(tasks: List[Task], status: str, on_refresh: Callable = None
     elif status == TaskStatus.DELETED:
         cols = ["Title", "Deleted Date", "Actions", "Details"]
     table = st.container()
+    if status == TaskStatus.ACTIVE:
+        st.markdown(
+            """
+            <style>
+            div[data-testid="column"]:not(:last-child) {
+                border-right: 1px solid #DDD;
+            }
+            hr.task-separator {
+                margin-top: 4px;
+                margin-bottom: 4px;
+            }
+            </style>
+            """,
+            unsafe_allow_html=True,
+        )
     with table:
         if status == TaskStatus.ACTIVE:
             header = st.columns([3, 1, 2, 1])
@@ -41,7 +56,7 @@ def render_task_list(tasks: List[Task], status: str, on_refresh: Callable = None
             header[1].write("**Date**")
             header[2].write("**Actions**")
             header[3].write("**Details**")
-        st.markdown("---")
+        st.markdown("<hr class='task-separator'>", unsafe_allow_html=True)
         
         for task in tasks:
             if status == TaskStatus.ACTIVE:
@@ -125,7 +140,7 @@ def render_task_list(tasks: List[Task], status: str, on_refresh: Callable = None
                             timestamp = update.get('timestamp')
                             timestamp_str = timestamp.strftime("%Y-%m-%d %H:%M") if isinstance(timestamp, datetime) else str(timestamp)
                             st.text(f"{timestamp_str}: {update.get('updateText', 'Updated')}")
-            st.markdown("---")
+            st.markdown("<hr class='task-separator'>", unsafe_allow_html=True)
 
 def render_active_tasks():
     """Render active tasks list with refresh capability."""
