@@ -155,7 +155,9 @@ class AIChat:
         updated_at: Optional[datetime] = None,
         response: Optional[str] = None,
         feedback_rating: Optional[str] = None,
-        feedback_text: Optional[str] = None
+        feedback_text: Optional[str] = None,
+        prompt_name: Optional[str] = None,
+        prompt_version: Optional[int] = None
     ):
         """
         Initialize an AIChat object.
@@ -178,6 +180,8 @@ class AIChat:
         self.response = response
         self.feedback_rating = feedback_rating
         self.feedback_text = feedback_text
+        self.prompt_name = prompt_name
+        self.prompt_version = prompt_version
     
     @classmethod
     def from_dict(cls, data: Dict[str, Any]) -> 'AIChat':
@@ -198,7 +202,9 @@ class AIChat:
             updated_at=data.get('updated_at'),
             response=data.get('Response'),
             feedback_rating=data.get('feedbackRating'),
-            feedback_text=data.get('feedbackText')
+            feedback_text=data.get('feedbackText'),
+            prompt_name=data.get('prompt_name'),
+            prompt_version=data.get('prompt_version')
         )
     
     def to_dict(self) -> Dict[str, Any]:
@@ -221,6 +227,10 @@ class AIChat:
             data['feedbackRating'] = self.feedback_rating
         if self.feedback_text is not None:
             data['feedbackText'] = self.feedback_text
+        if self.prompt_name is not None:
+            data['prompt_name'] = self.prompt_name
+        if self.prompt_version is not None:
+            data['prompt_version'] = self.prompt_version
 
         # Don't include created_at and updated_at as they're handled by Firestore
 

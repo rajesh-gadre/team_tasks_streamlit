@@ -28,6 +28,8 @@ Each document represents a task with the following fields:
   - `createdAt` (timestamp): When the record was created
   - `updated_at` (timestamp): When the record was last updated (same as createdAt on insert)
   - `Response` (string): AI response from OpenAI (added after processing)
+  - `prompt_name` (string): Name of the prompt used
+  - `prompt_version` (number): Version of the prompt used
 
 ### AI_prompts Collection
 - **Collection Name:** AI_prompts
@@ -48,6 +50,7 @@ Here is the description of the endpoints in a related system that interact with 
 - DELETE /api/tasks/:id: Set `status` to 'deleted', update `updatedAt` (soft-delete).
 - PATCH /api/tasks/:id/restore: Set `status` to 'active', update `updatedAt`.
 - POST /api/ai-chats: Accepts `{ inputText: string }` in request body, requires authentication (JWT), and stores a new document in Firestore `AI_chats` collection with fields: `user_id`, `inputText`, `createdAt`, `updated_at`. After saving, fetches the latest record from Firestore `AI_prompts` where `prompt_name` = "AI_Tasks" and `status` = "Active", uses the `text` field from this prompt as the system prompt for OpenAI (via Langchain), and the user's input as the human prompt. Gets the response from OpenAI, saves it in the same `AI_chats` record as `Response`, and returns it to the frontend.
+- POST /api/ai-chats: Accepts `{ inputText: string }` in request body, requires authentication (JWT), and stores a new document in Firestore `AI_chats` collection with fields: `user_id`, `inputText`, `createdAt`, `updated_at`, `prompt_name`, and `prompt_version`. After saving, fetches the latest record from Firestore `AI_prompts` where `prompt_name` = "AI_Tasks" and `status` = "Active", uses the `text` field from this prompt as the system prompt for OpenAI (via Langchain), and the user's input as the human prompt. Gets the response from OpenAI, saves it in the same `AI_chats` record as `Response`, and returns it to the frontend.
 
 All operations must check that the task's `userId` matches the authenticated user.
 

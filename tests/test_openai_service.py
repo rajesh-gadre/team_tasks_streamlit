@@ -46,7 +46,7 @@ root_dir = Path(__file__).resolve().parents[1]
 sys.path.append(str(root_dir))
 sys.path.append(str(root_dir / 'src'))
 
-from ai.openai_service import OpenAIService, TaskChanges
+from ai.openai_service import OpenAIService, TaskChanges, AIPrompt
 
 
 def test_call_openai(monkeypatch):
@@ -68,3 +68,37 @@ def test_call_openai(monkeypatch):
     monkeypatch.setattr(service, '_OpenAIService__collect_feedback', lambda cid, r: None)
     result = service._call_openai('user', 'prompt', 'input', {}, 'chat1')
     assert result == 'done'
+
+
+def test_process_chat_records_prompt(monkeypatch):
+    monkeypatch.setenv('OPENAI_API_KEY', 'test-key')
+
+    captured = {}
+
+    def create(coll, data):
+        captured['data'] = data
+        return 'cid'
+
+    def update(coll, doc_id, data):
+        captured['update'] = data
+
+    dummy_db = SimpleNamespace(create=create, update=update)
+    monkeypatch.setattr('ai.openai_service.get_client', lambda: dummy_db)
+
+    dummy_ts = SimpleNamespace(
+        get_active_tasks=lambda uid: [],
+        get_completed_tasks=lambda uid: [],
+        get_deleted_tasks=lambda uid: []
+    )
+    monkeypatch.setattr('ai.openai_service.get_task_service', lambda: dummy_ts)
+
+    service = OpenAIService()
+
+    monkeypatch.setattr(service, '_get_system_prompt', lambda: AIPrompt(prompt_name='AI_Tasks', text='t', version=3))
+    monkeypatch.setattr(service, '_call_openai', lambda u, sp, it, tl, cid: TaskChanges(new_tasks=[], modified_tasks=[]))
+
+    service.process_chat('user1', 'hello')
+
+    assert captured['data']['prompt_name'] == 'AI_Tasks'
+    assert captured['data']['prompt_version'] == 3
+    assert 'Response' in captured['update']

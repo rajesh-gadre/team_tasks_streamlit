@@ -72,7 +72,9 @@ Document:
   inputText: string,
   createdAt: timestamp,
   updated_at: timestamp,
-  Response: string
+  Response: string,
+  prompt_name: string,
+  prompt_version: number
 }
 ```
 
