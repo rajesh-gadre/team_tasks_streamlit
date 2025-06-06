@@ -42,8 +42,8 @@ def render_eval_candidates():
                 'chat_details' in st.session_state
                 and chat['id'] in st.session_state.chat_details
             ):
-                with st.expander("Chat Details", expanded=True):
-                    st.json(chat)
+                st.subheader("Chat Details")
+                st.json(chat)
 
     with st.expander("Evaluation Inputs", expanded=True):
         eval_inputs = get_eval_input_service().get_latest_inputs(count)
@@ -55,7 +55,8 @@ def render_eval_candidates():
             toggle = (
                 EvalStatus.ARCHIVED if ev.status == EvalStatus.ACTIVE else EvalStatus.ACTIVE
             )
-            if cols[1].button(f"Set {toggle}", key=f"toggle_{ev.id}"):
+            toggle_text = "Archive" if ev.status == EvalStatus.ACTIVE else "Unarchive"
+            if cols[1].button(toggle_text, key=f"toggle_{ev.id}"):
                 get_eval_input_service().update_status(ev.id, toggle)
                 st.rerun()
             if cols[2].button("Details", key=f"ev_details_{ev.id}"):
@@ -70,5 +71,5 @@ def render_eval_candidates():
                 'eval_details' in st.session_state
                 and ev.id in st.session_state.eval_details
             ):
-                with st.expander("Evaluation Input Details", expanded=True):
-                    st.json(ev.__dict__)
+                st.subheader("Evaluation Input Details")
+                st.json(ev.__dict__)

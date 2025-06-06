@@ -239,10 +239,9 @@ def main():
         # ])
 
         page = st.navigation({
-            "🧑‍💼USER PAGES": user_pages, 
-            "🧭 NAVIGATION" : navigation_pages,
-            ".":[],
-            "🛠️ ADMIN PAGES": admin_pages,
+            "🧑‍💼🧑‍💼🧑‍💼🧑‍💼🧑‍💼 USER": user_pages, 
+            "🧭🧭🧭🧭🧭 NAVIGATION" : navigation_pages,
+            "🛠️🛠️🛠️🛠️🛠️ ADMIN": admin_pages,
             })
 
         # Run the selected page
