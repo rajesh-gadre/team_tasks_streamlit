@@ -125,10 +125,16 @@ def main():
             st.header("Debug Information")
             with st.expander("Session State"):
                 debug_session_state()
+            with st.expander("Session secrets"):
+                st.json(st.secrets)
+            with st.expander("Environment secrets"):
+                env_dict = {k: v for k, v in os.environ.items() if isinstance(v, str)}
+                st.json(env_dict)
             with st.expander("AI Chats"):
                 df=pd.DataFrame(get_all_chats())
                 st.dataframe(df)
             with st.expander("Tasks"):
+                task_service = get_task_service()
                 tasks=task_service.get_all_tasks()
                 # Convert tasks to a simplified dict format that can be displayed in a dataframe
                 task_list=[{
@@ -146,6 +152,7 @@ def main():
                 df=pd.DataFrame(task_list) 
                 st.dataframe(df)
             with st.expander("Prompts"):
+                prompt_repository = get_prompt_repository()
                 prompts=prompt_repository.get_all_prompts()
                 prompt_list=[prompt.to_dict() for prompt in prompts]
                 df=pd.DataFrame(prompt_list)
