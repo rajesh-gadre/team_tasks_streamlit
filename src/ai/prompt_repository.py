@@ -34,8 +34,14 @@ class PromptRepository:
                 ('prompt_name', '==', prompt_name),
                 ('status', '==', PromptStatus.ACTIVE)
             ]
-            
-            prompts_data = self.db.query(self.collection, filters=filters, limit=1)
+
+            prompts_data = self.db.query(
+                self.collection,
+                filters=filters,
+                order_by='version',
+                direction='DESCENDING',
+                limit=1
+            )
             
             if not prompts_data:
                 logger.warning(f"No active prompt found with name: {prompt_name}")
@@ -46,19 +52,23 @@ class PromptRepository:
             logger.error(f"Error getting active prompt {prompt_name}: {str(e)}")
             raise
     
-    def get_all_prompts(self) -> List[AIPrompt]:
-        """
-        Get all prompts.
-        
-        Returns:
-            List of AIPrompt objects
-        """
+    def get_latest_prompts(self) -> List[AIPrompt]:
+        """Get the latest version of each prompt."""
         try:
-            prompts_data = self.db.query(self.collection)
-            
-            return [AIPrompt.from_dict(prompt_data) for prompt_data in prompts_data]
+            prompts_data = self.db.query(
+                self.collection,
+                order_by='version',
+                direction='DESCENDING'
+            )
+
+            latest = {}
+            for data in prompts_data:
+                name = data.get('prompt_name')
+                if name and name not in latest:
+                    latest[name] = AIPrompt.from_dict(data)
+            return list(latest.values())
         except Exception as e:
-            logger.error(f"Error getting all prompts: {str(e)}")
+            logger.error(f"Error getting latest prompts: {str(e)}")
             raise
     
     def create_prompt(self, prompt: AIPrompt) -> str:
@@ -87,25 +97,27 @@ class PromptRepository:
             logger.error(f"Error creating prompt: {str(e)}")
             raise
     
-    def update_prompt(self, prompt_id: str, prompt_data: Dict[str, Any]) -> bool:
-        """
-        Update an existing prompt.
-        
-        Args:
-            prompt_id: Prompt identifier
-            prompt_data: Updated prompt data
-            
-        Returns:
-            True if update was successful, False otherwise
-        """
+    def create_prompt_version(self, prompt_id: str, prompt_data: Dict[str, Any]) -> str:
+        """Create a new version of the given prompt."""
         try:
-            # Update prompt in Firestore
-            result = self.db.update(self.collection, prompt_id, prompt_data)
-            
-            logger.info(f"Prompt {prompt_id} updated")
-            return result
+            original = self.db.read(self.collection, prompt_id)
+            if not original:
+                raise ValueError(f"Prompt {prompt_id} not found")
+
+            # Mark old prompt inactive
+            self.db.update(self.collection, prompt_id, {'status': PromptStatus.INACTIVE})
+
+            version = original.get('version', 1) + 1
+            new_prompt = AIPrompt(
+                prompt_name=original.get('prompt_name'),
+                text=prompt_data.get('text', original.get('text')),
+                status=PromptStatus.ACTIVE,
+                version=version
+            )
+            new_prompt.validate()
+            return self.create_prompt(new_prompt)
         except Exception as e:
-            logger.error(f"Error updating prompt {prompt_id}: {str(e)}")
+            logger.error(f"Error creating new version for {prompt_id}: {str(e)}")
             raise
     
     def delete_prompt(self, prompt_id: str) -> bool:

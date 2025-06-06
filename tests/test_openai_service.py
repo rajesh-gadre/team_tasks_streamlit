@@ -42,7 +42,9 @@ class DummyChat:
 lc_openai.ChatOpenAI = DummyChat
 sys.modules['langchain_openai'] = lc_openai
 
-sys.path.append(str(Path(__file__).resolve().parents[1]))
+root_dir = Path(__file__).resolve().parents[1]
+sys.path.append(str(root_dir))
+sys.path.append(str(root_dir / 'src'))
 
 from ai.openai_service import OpenAIService, TaskChanges
 

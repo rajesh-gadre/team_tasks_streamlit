@@ -2,10 +2,40 @@ import os
 import json
 import sys
 from pathlib import Path
-from types import SimpleNamespace
+from types import SimpleNamespace, ModuleType
 
-# ensure src is on path
-sys.path.append(str(Path(__file__).resolve().parents[1] / 'src'))
+root_dir = Path(__file__).resolve().parents[1]
+sys.path.append(str(root_dir))
+sys.path.append(str(root_dir / 'src'))
+
+# Stub external dependencies before importing the module
+sys.modules.setdefault('streamlit', ModuleType('streamlit'))
+sys.modules['streamlit'].session_state = {}
+
+lc_core = ModuleType('langchain_core')
+lc_core.pydantic_v1 = ModuleType('pydantic_v1')
+lc_core.messages = ModuleType('messages')
+import pydantic
+lc_core.pydantic_v1.BaseModel = pydantic.BaseModel
+lc_core.pydantic_v1.Field = lambda default=None, **kwargs: default
+class _Msg:
+    def __init__(self, content):
+        self.content = content
+lc_core.messages.SystemMessage = _Msg
+lc_core.messages.HumanMessage = _Msg
+sys.modules['langchain_core'] = lc_core
+sys.modules['langchain_core.pydantic_v1'] = lc_core.pydantic_v1
+sys.modules['langchain_core.messages'] = lc_core.messages
+lc_openai = ModuleType('langchain_openai')
+class DummyChat:
+    def __init__(self, *a, **k):
+        pass
+    def with_structured_output(self, *a, **k):
+        return self
+    def invoke(self, *a, **k):
+        return SimpleNamespace(content='ok')
+lc_openai.ChatOpenAI = DummyChat
+sys.modules['langchain_openai'] = lc_openai
 
 from ai.openai_service import OpenAIService
 
@@ -15,6 +45,7 @@ def create_service(monkeypatch):
     os.environ.setdefault('OPENAI_API_KEY', 'test-key')
     monkeypatch.setattr('ai.openai_service.get_client', lambda: SimpleNamespace())
     return OpenAIService()
+
 
 def test_add_task_valid(monkeypatch):
     service = create_service(monkeypatch)
@@ -39,6 +70,7 @@ def test_add_task_valid(monkeypatch):
     assert captured['user_id'] == 'user1'
     expected_payload = payload | {'status': 'active'}
     assert captured['task_data'] == expected_payload
+
 
 def test_add_task_invalid(monkeypatch):
     service = create_service(monkeypatch)

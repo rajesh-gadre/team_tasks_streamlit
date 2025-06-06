@@ -251,7 +251,8 @@ class AIPrompt:
         id: Optional[str] = None,
         prompt_name: str = None,
         text: str = None,
-        status: str = PromptStatus.ACTIVE
+        status: str = PromptStatus.ACTIVE,
+        version: int = 1
     ):
         """
         Initialize an AIPrompt object.
@@ -266,6 +267,7 @@ class AIPrompt:
         self.prompt_name = prompt_name
         self.text = text
         self.status = status
+        self.version = version
     
     @classmethod
     def from_dict(cls, data: Dict[str, Any]) -> 'AIPrompt':
@@ -282,7 +284,8 @@ class AIPrompt:
             id=data.get('id'),
             prompt_name=data.get('prompt_name'),
             text=data.get('text'),
-            status=data.get('status', PromptStatus.ACTIVE)
+            status=data.get('status', PromptStatus.ACTIVE),
+            version=data.get('version', 1)
         )
     
     def to_dict(self) -> Dict[str, Any]:
@@ -295,7 +298,8 @@ class AIPrompt:
         return {
             'prompt_name': self.prompt_name,
             'text': self.text,
-            'status': self.status
+            'status': self.status,
+            'version': self.version
         }
     
     def validate(self) -> bool:
@@ -314,5 +318,7 @@ class AIPrompt:
             raise ValueError("Prompt text is required")
         if self.status not in [s.value for s in PromptStatus]:
             raise ValueError(f"Invalid status: {self.status}")
+        if self.version < 1:
+            raise ValueError("Version must be >= 1")
         
         return True
