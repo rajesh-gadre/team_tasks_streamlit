@@ -320,5 +320,65 @@ class AIPrompt:
             raise ValueError(f"Invalid status: {self.status}")
         if self.version < 1:
             raise ValueError("Version must be >= 1")
-        
+
+        return True
+
+
+class EvalStatus(str, Enum):
+    """Enum for evaluation input status values."""
+
+    ACTIVE = 'active'
+    ARCHIVED = 'archived'
+
+
+class AIEvalInput:
+    """AI Evaluation Input data model."""
+
+    def __init__(
+        self,
+        id: Optional[str] = None,
+        user_id: str = None,
+        input_text: str = None,
+        response: Optional[str] = None,
+        status: str = EvalStatus.ACTIVE,
+        created_at: Optional[datetime] = None,
+        updated_at: Optional[datetime] = None,
+    ):
+        self.id = id
+        self.user_id = user_id
+        self.input_text = input_text
+        self.response = response
+        self.status = status
+        self.created_at = created_at
+        self.updated_at = updated_at
+
+    @classmethod
+    def from_dict(cls, data: Dict[str, Any]) -> "AIEvalInput":
+        return cls(
+            id=data.get('id'),
+            user_id=data.get('user_id'),
+            input_text=data.get('inputText'),
+            response=data.get('Response'),
+            status=data.get('status', EvalStatus.ACTIVE),
+            created_at=data.get('createdAt'),
+            updated_at=data.get('updatedAt'),
+        )
+
+    def to_dict(self) -> Dict[str, Any]:
+        data = {
+            'user_id': self.user_id,
+            'inputText': self.input_text,
+            'status': self.status,
+        }
+        if self.response is not None:
+            data['Response'] = self.response
+        return data
+
+    def validate(self) -> bool:
+        if not self.user_id:
+            raise ValueError('User ID is required')
+        if not self.input_text:
+            raise ValueError('Input text is required')
+        if self.status not in [s.value for s in EvalStatus]:
+            raise ValueError(f'Invalid status: {self.status}')
         return True
