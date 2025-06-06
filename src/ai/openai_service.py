@@ -12,7 +12,7 @@ from langchain_openai import ChatOpenAI
 
 from src.tasks.task_service import get_task_service
 from src.database.firestore import get_client
-from src.database.models import AIChat
+from src.database.models import AIChat, AIPrompt, PromptStatus
 from src.ai.prompt_repository import get_prompt_repository
 from pydantic import BaseModel
 
@@ -91,14 +91,16 @@ class OpenAIService:
     
     def process_chat(self, user_id: str, input_text: str) -> Dict[str, Any]:
         try:
+            system_prompt = self._get_system_prompt()
             chat_data = {
                 'user_id': user_id,
-                'inputText': input_text
+                'inputText': input_text,
+                'prompt_name': system_prompt.prompt_name,
+                'prompt_version': system_prompt.version
             }
             task_list = self._list_tasks(user_id)
-            system_prompt = self._get_system_prompt()
             chat_id = self.db.create(self.collection, chat_data)
-            response = self._call_openai(user_id, system_prompt, input_text, task_list, chat_id)
+            response = self._call_openai(user_id, system_prompt.text, input_text, task_list, chat_id)
             if response is None:
                 return None
             self.db.update(self.collection, chat_id, {'Response': json.dumps(response.dict(), cls=FirestoreEncoder)})
@@ -162,18 +164,21 @@ class OpenAIService:
             logger.error(f"Error updating task: {str(e)}")
             return {"error": str(e)}
     
-    def _get_system_prompt(self) -> str:
-        DEFAULT_PROMPT = """You are an expert Task manager. Given the user input which includes user's current task-list, first understand the user's goal and figure out what changes need to be made to user's task list."""
+    def _get_system_prompt(self) -> AIPrompt:
+        """Fetch the active system prompt or return a default."""
+        DEFAULT_TEXT = (
+            "You are an expert Task manager. Given the user input which includes"
+            " user's current task-list, first understand the user's goal and figure"
+            " out what changes need to be made to user's task list."
+        )
         try:
             prompt = get_prompt_repository().get_active_prompt("AI_Tasks")
             if prompt:
-                return prompt.text
-            else:
-                logger.warning("No active AI_Tasks prompt found, using fallback")
-                return DEFAULT_PROMPT
+                return prompt
+            logger.warning("No active AI_Tasks prompt found, using fallback")
         except Exception as e:
             logger.error(f"Error getting system prompt: {str(e)}")
-            return DEFAULT_PROMPT
+        return AIPrompt(prompt_name="AI_Tasks", text=DEFAULT_TEXT, status=PromptStatus.ACTIVE, version=0)
 
     def _first_call(self, system_prompt: str, user_input: str, task_list: Dict[str, Any]) -> str:
         try:
