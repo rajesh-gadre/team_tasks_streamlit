@@ -211,6 +211,7 @@ def main():
         debug_page_nav = st.Page(debug_page, title="Debug", icon="🐞")
 
         user_pages = [active_page, completed_page, deleted_page, ai_page]
+        navigation_pages = []
         admin_pages = [prompt_page, summary_nav, debug_page_nav]
 
         # Create navigation
@@ -224,7 +225,12 @@ def main():
         #    debug_page_nav,
         # ])
 
-        page = st.navigation({"User": user_pages, "Admin": admin_pages})
+        page = st.navigation({
+            "🧑‍💼USER PAGES": user_pages, 
+            "🧭 NAVIGATION" : navigation_pages,
+            ".":[],
+            "🛠️ ADMIN PAGES": admin_pages,
+            })
 
         # Run the selected page
         page.run()
