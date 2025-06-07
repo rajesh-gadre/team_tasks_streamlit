@@ -196,7 +196,8 @@ def main():
                 st.dataframe(df)
             with st.expander("Prompts"):
                 prompt_repository = get_prompt_repository()
-                prompts = prompt_repository.get_latest_prompts()
+                # Display all prompts rather than just the latest versions
+                prompts = prompt_repository.get_all_prompts()
                 prompt_list = [prompt.to_dict() for prompt in prompts]
                 df = pd.DataFrame(prompt_list)
                 st.dataframe(df)
