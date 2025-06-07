@@ -204,4 +204,11 @@ class GoogleAuth:
         return redirect_uri
 
 # Create an instance for use in the application
-google_auth = GoogleAuth()
+#google_auth = GoogleAuth()
+google_auth = None
+
+def get_google_auth():
+    global google_auth
+    if google_auth is None:
+        google_auth = GoogleAuth()
+    return google_auth

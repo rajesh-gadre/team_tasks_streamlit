@@ -9,14 +9,14 @@ import types
 sys.modules.setdefault('streamlit', types.ModuleType('streamlit'))
 sys.modules['streamlit'].session_state = {}
 
-from auth.google_auth import GoogleAuth
+from src.auth.google_auth import get_google_auth
 
 
 def _create_auth(monkeypatch):
     monkeypatch.setenv('GOOGLE_CLIENT_ID', 'client')
     monkeypatch.setenv('GOOGLE_CLIENT_SECRET', 'secret')
     monkeypatch.setenv('JWT_SECRET_KEY', 'jwt-secret')
-    return GoogleAuth()
+    return get_google_auth()
 
 
 def test_generate_and_validate_token(monkeypatch):

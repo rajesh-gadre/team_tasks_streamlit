@@ -103,7 +103,7 @@ class OpenAIService:
             response = self._call_openai(user_id, system_prompt.text, input_text, task_list, chat_id)
             if response is None:
                 return None
-            self.db.update(self.collection, chat_id, {'Response': json.dumps(response.dict(), cls=FirestoreEncoder)})
+            self.db.update(self.collection, chat_id, {'Response': json.dumps(response.model_dump(), cls=FirestoreEncoder)})
             logger.debug(f"Chat processed for user {user_id}")
             return {
                 'chat_id': chat_id,
