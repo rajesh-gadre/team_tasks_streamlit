@@ -392,3 +392,42 @@ class AIEvalInput:
         if self.status not in [s.value for s in EvalStatus]:
             raise ValueError(f'Invalid status: {self.status}')
         return True
+class AIEvalResult:
+    """Evaluation result for a given input and prompt."""
+
+    def __init__(
+        self,
+        id: Optional[str] = None,
+        eval_input_id: str | None = None,
+        prompt_name: str | None = None,
+        prompt_version: int | None = None,
+        result: str | None = None,
+        created_at: Optional[datetime] = None,
+    ):
+        self.id = id
+        self.eval_input_id = eval_input_id
+        self.prompt_name = prompt_name
+        self.prompt_version = prompt_version
+        self.result = result
+        self.created_at = created_at
+
+    @classmethod
+    def from_dict(cls, data: Dict[str, Any]) -> "AIEvalResult":
+        return cls(
+            id=data.get("id"),
+            eval_input_id=data.get("eval_input_id"),
+            prompt_name=data.get("prompt_name"),
+            prompt_version=data.get("prompt_version"),
+            result=data.get("result"),
+            created_at=data.get("createdAt"),
+        )
+
+    def to_dict(self) -> Dict[str, Any]:
+        data = {
+            "eval_input_id": self.eval_input_id,
+            "prompt_name": self.prompt_name,
+            "prompt_version": self.prompt_version,
+            "result": self.result,
+        }
+        return data
+

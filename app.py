@@ -138,6 +138,10 @@ def main():
             from src.ui.eval_candidates import render_eval_candidates
             render_eval_candidates()
 
+        def run_evals_page():
+            from src.ui.run_evals import render_run_evals
+            render_run_evals()
+
         def debug_session_state():
             session_items = {}
             for key, value in st.session_state.items():
@@ -220,12 +224,15 @@ def main():
         eval_candidates_nav = st.Page(
             eval_candidates_page, title="Eval Candidates", icon="🧪"
         )
+        run_evals_nav = st.Page(
+            run_evals_page, title="Run Evals", icon="⚙️"
+        )
         debug_page_nav = st.Page(debug_page, title="Debug", icon="🐞")
 
         user_pages = [active_page, completed_page, deleted_page, ai_page]
 
         navigation_pages = [summary_nav, changelog_nav]
-        admin_pages = [prompt_page, eval_candidates_nav, debug_page_nav]
+        admin_pages = [prompt_page, eval_candidates_nav, run_evals_nav, debug_page_nav]
 
         # Create navigation
         # page = st.navigation([

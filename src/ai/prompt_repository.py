@@ -70,6 +70,38 @@ class PromptRepository:
         except Exception as e:
             logger.error(f"Error getting latest prompts: {str(e)}")
             raise
+
+    def get_all_prompts(self) -> List[AIPrompt]:
+        """Return all prompts, all versions."""
+        try:
+            prompts_data = self.db.query(
+                self.collection,
+                order_by='prompt_name',
+                direction='ASCENDING'
+            )
+            return [AIPrompt.from_dict(d) for d in prompts_data]
+        except Exception as e:
+            logger.error(f"Error getting all prompts: {str(e)}")
+            raise
+
+    def get_prompt_by_name_version(self, name: str, version: int) -> Optional[AIPrompt]:
+        """Return a specific prompt version by name and version."""
+        try:
+            filters = [
+                ('prompt_name', '==', name),
+                ('version', '==', version)
+            ]
+            data = self.db.query(
+                self.collection,
+                filters=filters,
+                limit=1
+            )
+            if not data:
+                return None
+            return AIPrompt.from_dict(data[0])
+        except Exception as e:
+            logger.error(f"Error getting prompt {name} v{version}: {str(e)}")
+            raise
     
     def create_prompt(self, prompt: AIPrompt) -> str:
         """
