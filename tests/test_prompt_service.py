@@ -16,10 +16,10 @@ def _setup(monkeypatch):
 
 def test_get_all_prompts(monkeypatch):
     service, repo = _setup(monkeypatch)
-    repo.get_latest_prompts.return_value = ['p']
+    repo.get_all_prompts.return_value = ['p']
     result = service.get_all_prompts()
     assert result == ['p']
-    repo.get_latest_prompts.assert_called_once()
+    repo.get_all_prompts.assert_called_once()
 
 
 def test_update_prompt_creates_new_version(monkeypatch):
@@ -28,4 +28,12 @@ def test_update_prompt_creates_new_version(monkeypatch):
     result = service.update_prompt('id1', {'text': 'new text'})
     assert result is True
     repo.create_prompt_version.assert_called_once_with('id1', {'text': 'new text'})
+
+
+def test_set_active_version(monkeypatch):
+    service, repo = _setup(monkeypatch)
+    repo.set_active_version.return_value = True
+    result = service.set_active_version('p1', 2)
+    assert result is True
+    repo.set_active_version.assert_called_once_with('p1', 2)
 
