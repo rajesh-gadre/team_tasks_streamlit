@@ -13,10 +13,6 @@ class Page(str, Enum):
     AI = "AI Assistant"
     LOGIN = "Login"
 
-def init_navigation():
-    """Initialize navigation state in session state."""
-    if 'current_page' not in st.session_state:
-        st.session_state.current_page = Page.ACTIVE
 
 def set_page(page: Page):
     """
@@ -36,30 +32,6 @@ def get_current_page() -> Page:
     """
     return st.session_state.get('current_page', Page.ACTIVE)
 
-def render_navigation():
-    """Render navigation tabs and handle tab selection."""
-    # Get current page
-    current_page = get_current_page()
-    
-    # Create a radio button for navigation instead of tabs
-    # This gives us more direct control over the navigation
-    selected_page = st.radio(
-        "Navigation",
-        options=[Page.ACTIVE, Page.COMPLETED, Page.DELETED, Page.AI],
-        horizontal=True,
-        label_visibility="collapsed",
-        index=[Page.ACTIVE, Page.COMPLETED, Page.DELETED, Page.AI].index(current_page)
-    )
-    
-    # If the selected page changes, update the current page
-    if selected_page != current_page:
-        set_page(selected_page)
-        st.rerun()
-    
-    # Create empty tabs to maintain compatibility with the rest of the app
-    tabs = st.tabs([Page.ACTIVE, Page.COMPLETED, Page.DELETED, Page.AI])
-    
-    return tabs
 
 def render_sidebar():
     """Render sidebar with user info and logout button."""
