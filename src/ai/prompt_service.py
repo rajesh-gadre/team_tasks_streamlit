@@ -12,13 +12,19 @@ class PromptService:
         self.repository = get_prompt_repository()
 
     def get_all_prompts(self) -> List[AIPrompt]:
-        logger.info("Getting latest prompts")
-        return self.repository.get_latest_prompts()
+        """Return all prompts, all versions."""
+        logger.info("Getting all prompts")
+        return self.repository.get_all_prompts()
 
     def update_prompt(self, prompt_id: str, prompt_data: Dict[str, Any]) -> bool:
         logger.info(f"Creating new version for prompt {prompt_id}")
         self.repository.create_prompt_version(prompt_id, prompt_data)
         return True
+
+    def set_active_version(self, prompt_name: str, version: int) -> bool:
+        """Set a specific version of a prompt as the only active version."""
+        logger.info(f"Setting {prompt_name} v{version} as active")
+        return self.repository.set_active_version(prompt_name, version)
 
 _prompt_service: Optional[PromptService] = None
 

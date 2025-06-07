@@ -136,20 +136,38 @@ class PromptRepository:
             if not original:
                 raise ValueError(f"Prompt {prompt_id} not found")
 
-            # Mark old prompt inactive
-            self.db.update(self.collection, prompt_id, {'status': PromptStatus.INACTIVE})
-
             version = original.get('version', 1) + 1
             new_prompt = AIPrompt(
                 prompt_name=original.get('prompt_name'),
                 text=prompt_data.get('text', original.get('text')),
-                status=PromptStatus.ACTIVE,
+                status=PromptStatus.INACTIVE,
                 version=version
             )
             new_prompt.validate()
             return self.create_prompt(new_prompt)
         except Exception as e:
             logger.error(f"Error creating new version for {prompt_id}: {str(e)}")
+            raise
+
+    def set_active_version(self, prompt_name: str, version: int) -> bool:
+        """Set the given version as active and others inactive."""
+        try:
+            prompts = self.db.query(
+                self.collection,
+                filters=[('prompt_name', '==', prompt_name)]
+            )
+            if not prompts:
+                raise ValueError(f"Prompt {prompt_name} not found")
+
+            found = False
+            for p in prompts:
+                status = PromptStatus.ACTIVE if p.get('version') == version else PromptStatus.INACTIVE
+                if p.get('version') == version:
+                    found = True
+                self.db.update(self.collection, p['id'], {'status': status})
+            return found
+        except Exception as e:
+            logger.error(f"Error setting active version {prompt_name} v{version}: {str(e)}")
             raise
     
     def delete_prompt(self, prompt_id: str) -> bool:

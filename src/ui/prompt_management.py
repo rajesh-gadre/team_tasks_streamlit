@@ -18,10 +18,19 @@ def render_prompt_management():
         st.info("No prompts found.")
         return
 
-    for prompt in prompts:
+    names = sorted({p.prompt_name for p in prompts})
+    prompt_name = st.selectbox("Select Prompt", names)
+
+    selected = [p for p in prompts if p.prompt_name == prompt_name]
+    selected.sort(key=lambda p: p.version, reverse=True)
+
+    for prompt in selected:
         with st.form(key=f"prompt_form_{prompt.id}"):
+            st.write(f"Version {prompt.version} (Status: {prompt.status})")
             text = st.text_area("Prompt Text", value=prompt.text, key=f"text_{prompt.id}")
-            submit = st.form_submit_button("Update")
+            col1, col2 = st.columns(2)
+            submit = col1.form_submit_button("Update")
+            activate = col2.form_submit_button("Set Active")
 
         if submit:
             if not text.strip():
@@ -30,9 +39,19 @@ def render_prompt_management():
                 data = {"text": text}
                 try:
                     if get_prompt_service().update_prompt(prompt.id, data):
-                        st.success("Prompt updated successfully!")
+                        st.success("New version created successfully!")
                         st.rerun()
                     else:
                         st.error("Failed to update prompt")
                 except Exception as e:
                     st.error(f"Failed to update prompt: {e}")
+
+        if activate:
+            try:
+                if get_prompt_service().set_active_version(prompt.prompt_name, prompt.version):
+                    st.success("Prompt activated successfully!")
+                    st.rerun()
+                else:
+                    st.error("Failed to activate prompt")
+            except Exception as e:
+                st.error(f"Failed to activate prompt: {e}")
