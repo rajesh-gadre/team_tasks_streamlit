@@ -262,7 +262,9 @@ class AIPrompt:
         prompt_name: str = None,
         text: str = None,
         status: str = PromptStatus.ACTIVE,
-        version: int = 1
+        version: int = 1,
+        created_at: Optional[datetime] = None,
+        updated_at: Optional[datetime] = None,
     ):
         """
         Initialize an AIPrompt object.
@@ -278,6 +280,8 @@ class AIPrompt:
         self.text = text
         self.status = status
         self.version = version
+        self.created_at = created_at
+        self.updated_at = updated_at
     
     @classmethod
     def from_dict(cls, data: Dict[str, Any]) -> 'AIPrompt':
@@ -295,7 +299,9 @@ class AIPrompt:
             prompt_name=data.get('prompt_name'),
             text=data.get('text'),
             status=data.get('status', PromptStatus.ACTIVE),
-            version=data.get('version', 1)
+            version=data.get('version', 1),
+            created_at=data.get('createdAt'),
+            updated_at=data.get('updatedAt')
         )
     
     def to_dict(self) -> Dict[str, Any]:
