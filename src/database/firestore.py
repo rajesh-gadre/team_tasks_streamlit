@@ -167,7 +167,13 @@ class FirestoreClient:
     def get_all(self, collection: str):
         try:
             docs = self.db.collection(collection).stream()
-            return [doc.to_dict() for doc in docs]
+            results = []
+            for doc in docs:
+                data = doc.to_dict()
+                if data is not None:
+                    data['id'] = doc.id
+                    results.append(data)
+            return results
         except Exception as e:
             logger.error(f"DB ERROR [GET ALL] - Collection: {collection} - Error: {str(e)}")
             raise
