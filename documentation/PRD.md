@@ -151,3 +151,6 @@ A Streamlit-based task management application that allows users to:
 - Streamlit documentation
 - Google OAuth documentation
 - Langchain documentation
+
+### 8.3 Repo Contribution Guidelines
+- Refer to AGENTS.md for repository rules

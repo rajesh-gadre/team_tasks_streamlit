@@ -393,3 +393,6 @@ OPENAI_API_KEY=your-openai-api-key
 GOOGLE_CLIENT_ID=your-google-client-id
 GOOGLE_CLIENT_SECRET=your-google-client-secret
 ```
+
+### 13.3 Repo Contribution Guidelines
+- Follow AGENTS.md for contribution rules
