@@ -24,34 +24,55 @@ def render_prompt_management():
     selected = [p for p in prompts if p.prompt_name == prompt_name]
     selected.sort(key=lambda p: p.version, reverse=True)
 
-    for prompt in selected:
-        with st.form(key=f"prompt_form_{prompt.id}"):
-            st.write(f"Version {prompt.version} (Status: {prompt.status})")
-            text = st.text_area("Prompt Text", value=prompt.text, key=f"text_{prompt.id}")
-            col1, col2 = st.columns(2)
-            submit = col1.form_submit_button("Update")
-            activate = col2.form_submit_button("Set Active")
+    active_prompt = next((p for p in selected if p.status == PromptStatus.ACTIVE), None)
 
-        if submit:
-            if not text.strip():
-                st.error("Prompt text cannot be empty")
-            else:
-                data = {"text": text}
-                try:
-                    if get_prompt_service().update_prompt(prompt.id, data):
-                        st.success("New version created successfully!")
-                        st.rerun()
-                    else:
-                        st.error("Failed to update prompt")
-                except Exception as e:
-                    st.error(f"Failed to update prompt: {e}")
+    # Section: Create new version
+    with st.form(key="create_new_version"):
+        st.subheader("Create new version")
+        text = st.text_area(
+            "Prompt Text",
+            value=active_prompt.text if active_prompt else (selected[0].text if selected else ""),
+        )
+        save = st.form_submit_button("Save")
 
-        if activate:
+    if save:
+        target = active_prompt.id if active_prompt else (selected[0].id if selected else None)
+        if not text.strip():
+            st.error("Prompt text cannot be empty")
+        elif target is None:
+            st.error("Prompt not found")
+        else:
             try:
-                if get_prompt_service().set_active_version(prompt.prompt_name, prompt.version):
-                    st.success("Prompt activated successfully!")
+                if get_prompt_service().update_prompt(target, {"text": text}):
+                    st.success("New version created successfully!")
                     st.rerun()
                 else:
-                    st.error("Failed to activate prompt")
+                    st.error("Failed to create new version")
             except Exception as e:
-                st.error(f"Failed to activate prompt: {e}")
+                st.error(f"Failed to create new version: {e}")
+
+    # Section: Change Active version
+    with st.form(key="change_active_version"):
+        st.subheader("Change Active version")
+        options = {
+            f"v{p.version} - {p.created_at.strftime('%Y-%m-%d %H:%M:%S') if p.created_at else 'unknown'}": p.version
+            for p in selected
+        }
+        current_version = active_prompt.version if active_prompt else None
+        version_choice = st.selectbox(
+            "Select Version",
+            list(options.keys()),
+            index=list(options.values()).index(current_version) if current_version in options.values() else 0,
+        )
+        update = st.form_submit_button("Update")
+
+    if update:
+        chosen_version = options.get(version_choice)
+        try:
+            if get_prompt_service().set_active_version(prompt_name, chosen_version):
+                st.success("Prompt activated successfully!")
+                st.rerun()
+            else:
+                st.error("Failed to activate prompt")
+        except Exception as e:
+            st.error(f"Failed to activate prompt: {e}")
