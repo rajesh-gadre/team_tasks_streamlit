@@ -9,6 +9,7 @@ import streamlit as st
 from langchain_core.pydantic_v1 import BaseModel
 from langchain_core.messages import SystemMessage, HumanMessage
 from langchain_openai import ChatOpenAI
+from src.ai.openai_executor import OpenAIExecutor
 
 from src.tasks.task_service import get_task_service
 from src.database.firestore import get_client
@@ -88,6 +89,7 @@ class OpenAIService:
             raise ValueError("Missing OpenAI API key")
         self.db = get_client()
         self.collection = 'AI_chats'
+        self.executor = OpenAIExecutor(self)
     
     def process_chat(self, user_id: str, input_text: str) -> Dict[str, Any]:
         try:
@@ -100,7 +102,7 @@ class OpenAIService:
             }
             task_list = self._list_tasks(user_id)
             chat_id = self.db.create(self.collection, chat_data)
-            response = self._call_openai(user_id, system_prompt.text, input_text, task_list, chat_id)
+            response = self.executor.execute(user_id, system_prompt.text, input_text, task_list, chat_id)
             if response is None:
                 return None
             self.db.update(
@@ -269,21 +271,6 @@ class OpenAIService:
             logger.error(f"THIRD CALL: Error updating tasks - {str(e)}")
             return None
         
-    def _call_openai(self, user_id: str, system_prompt: str, user_input: str,
-                     task_list: Dict[str, Any], chat_id: str) -> str:
-        """Call OpenAI and collect user feedback before returning."""
-
-        spinner = getattr(st, "spinner", None)
-        if spinner is None:
-            from contextlib import nullcontext
-            spinner = nullcontext
-        with spinner("Processing your request..."):
-            content1 = self._first_call(system_prompt, user_input, task_list)
-            resp = self._second_call(content1)
-            final_response = self.__third_call(user_id, resp)
-
-        logger.debug(f"\n\n\nOpenAI response: {final_response}")
-        return final_response
 
     def __collect_feedback(self, chat_id: str, resp: TaskChanges) -> bool:
         """Display a form to capture user feedback.
