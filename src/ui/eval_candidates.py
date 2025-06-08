@@ -24,13 +24,14 @@ def render_eval_candidates():
         if not chats:
             st.info("No chats found.")
         for chat in chats:
-            cols = st.columns([4, 1, 1])
+            cols = st.columns([4, 2, 1, 1])
             cols[0].markdown(f"**{chat.get('inputText','')}**")
-            if cols[1].button("Add to Evals", key=f"add_{chat['id']}"):
-                get_eval_input_service().add_from_chat(chat)
+            prompt = cols[1].text_input("Prompt", key=f"prompt_{chat['id']}")
+            if cols[2].button("Add to Evals", key=f"add_{chat['id']}"):
+                get_eval_input_service().add_from_chat(chat, prompt)
                 st.success("Added to evaluation inputs")
                 st.rerun()
-            if cols[2].button("Details", key=f"chat_details_{chat['id']}"):
+            if cols[3].button("Details", key=f"chat_details_{chat['id']}"):
                 if 'chat_details' not in st.session_state:
                     st.session_state.chat_details = {}
                 if chat['id'] in st.session_state.chat_details:
