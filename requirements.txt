@@ -12,3 +12,4 @@ pytest
 PyJWT>=2.0
 git+https://github.com/amit-sw/aiclub_google_auth.git
 authlib
+pytest-cov
