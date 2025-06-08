@@ -29,8 +29,8 @@ class DummyChat:
 lc_openai.ChatOpenAI = DummyChat
 sys.modules['langchain_openai'] = lc_openai
 
-from ai.eval_service import EvalService
-from ai.eval_input_service import EvalInputService
+from src.eval.eval_service import EvalService
+from src.eval.eval_input_service import EvalInputService
 from src.database.models import AIEvalInput, AIPrompt
 
 
@@ -39,15 +39,15 @@ def _setup_eval_service(monkeypatch):
     repo.create_result.return_value = 'rid'
     prompt_repo = MagicMock()
     prompt_repo.get_prompt_by_name_version.return_value = AIPrompt(prompt_name='p', text='t', version=1)
-    monkeypatch.setattr('ai.eval_service.get_eval_result_repository', lambda: repo)
-    monkeypatch.setattr('ai.eval_service.get_prompt_repository', lambda: prompt_repo)
+    monkeypatch.setattr('src.eval.eval_service.get_eval_result_repository', lambda: repo)
+    monkeypatch.setattr('src.eval.eval_service.get_prompt_repository', lambda: prompt_repo)
     monkeypatch.setenv('OPENAI_API_KEY', 'k')
     return EvalService(), repo, prompt_repo
 
 
 def _setup_input_service(monkeypatch):
     repo = MagicMock()
-    monkeypatch.setattr('ai.eval_input_service.get_eval_input_repository', lambda: repo)
+    monkeypatch.setattr('src.eval.eval_input_service.get_eval_input_repository', lambda: repo)
     return EvalInputService(), repo
 
 

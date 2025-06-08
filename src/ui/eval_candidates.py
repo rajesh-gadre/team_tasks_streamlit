@@ -1,7 +1,7 @@
 """UI for selecting evaluation candidates from AI chats."""
 
 import streamlit as st
-from src.ai.eval_input_service import get_eval_input_service
+from src.eval.eval_input_service import get_eval_input_service
 from src.database.firestore import get_client
 from src.database.models import EvalStatus
 

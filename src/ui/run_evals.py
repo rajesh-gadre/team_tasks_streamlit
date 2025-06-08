@@ -2,8 +2,8 @@
 
 import streamlit as st
 
-from src.ai.eval_input_service import get_eval_input_service
-from src.ai.eval_service import get_eval_service
+from src.eval.eval_input_service import get_eval_input_service
+from src.eval.eval_service import get_eval_service
 from src.ai.prompt_repository import get_prompt_repository
 from src.database.models import EvalStatus
 

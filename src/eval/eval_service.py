@@ -5,7 +5,7 @@ from typing import List, Optional
 from langchain_core.messages import SystemMessage, HumanMessage
 from langchain_openai import ChatOpenAI
 
-from src.ai.eval_result_repository import get_eval_result_repository
+from src.eval.eval_result_repository import get_eval_result_repository
 from src.ai.prompt_repository import get_prompt_repository
 from src.database.models import AIEvalInput, AIEvalResult
 

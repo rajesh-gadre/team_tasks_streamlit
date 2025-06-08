@@ -1,7 +1,7 @@
 import logging
 from typing import List, Dict, Any, Optional
 
-from src.ai.eval_input_repository import get_eval_input_repository
+from src.eval.eval_input_repository import get_eval_input_repository
 from src.database.models import AIEvalInput, EvalStatus
 
 logger = logging.getLogger(__name__)
