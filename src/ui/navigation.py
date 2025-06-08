@@ -12,6 +12,7 @@ from src.ai.chat_service import delete_all_chats_one_by_one, get_all_chats
 from src.tasks.task_service import get_task_service
 from src.ai.prompt_repository import get_prompt_repository
 from src.eval.debug_data import get_eval_inputs, get_eval_results
+from src.ui.run_tests import render_run_tests
 logger = logging.getLogger(__name__)
 
 class Page(str, Enum):
@@ -87,6 +88,9 @@ def eval_candidates_page():
 def run_evals_page():
     from src.ui.run_evals import render_run_evals
     render_run_evals()
+
+def run_tests_page():
+    render_run_tests()
 
 def debug_session_state():
     session_items = {}
@@ -164,11 +168,12 @@ def render_main_page():
     prompt_page = st.Page(prompt_management_page, title='Prompt Management', icon='📝')
     summary_nav = st.Page(summary_page, title='Summary', icon='📋')
     changelog_nav = st.Page(changelog_page, title='ChangeLog', icon='📜')
+    run_tests_nav = st.Page(run_tests_page, title='Run Tests', icon='🧪')
     eval_candidates_nav = st.Page(eval_candidates_page, title='Eval Candidates', icon='🧪')
     run_evals_nav = st.Page(run_evals_page, title='Run Evals', icon='⚙️')
     debug_page_nav = st.Page(debug_page, title='Debug', icon='🐞')
     user_pages = [ai_page, active_page, completed_page, deleted_page]
-    navigation_pages = [summary_nav, changelog_nav]
+    navigation_pages = [summary_nav, changelog_nav, run_tests_nav]
     admin_pages = [prompt_page, eval_candidates_nav, run_evals_nav, debug_page_nav]
     page = st.navigation({'============= 🧑\u200d💼 User': user_pages, '============= 🧭 Nav': navigation_pages, '============= 🛠️ Admin': admin_pages})
     page.run()
