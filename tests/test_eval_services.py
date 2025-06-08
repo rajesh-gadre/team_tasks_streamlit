@@ -3,36 +3,35 @@ import sys
 from pathlib import Path
 from types import SimpleNamespace, ModuleType
 from unittest.mock import MagicMock
-
 import pytest
-
 root_dir = Path(__file__).resolve().parents[1]
 sys.path.append(str(root_dir))
 sys.path.append(str(root_dir / 'src'))
-
 lc_core = ModuleType('langchain_core')
 lc_core.messages = ModuleType('messages')
+
 class _Msg:
+
     def __init__(self, content):
         self.content = content
 lc_core.messages.SystemMessage = _Msg
 lc_core.messages.HumanMessage = _Msg
 sys.modules['langchain_core'] = lc_core
 sys.modules['langchain_core.messages'] = lc_core.messages
-
 lc_openai = ModuleType('langchain_openai')
+
 class DummyChat:
+
     def __init__(self, *a, **k):
         pass
+
     def invoke(self, *a, **k):
         return SimpleNamespace(content='ok')
 lc_openai.ChatOpenAI = DummyChat
 sys.modules['langchain_openai'] = lc_openai
-
 from src.eval.eval_service import EvalService
 from src.eval.eval_input_service import EvalInputService
 from src.database.models import AIEvalInput, AIPrompt
-
 
 def _setup_eval_service(monkeypatch):
     repo = MagicMock()
@@ -42,16 +41,14 @@ def _setup_eval_service(monkeypatch):
     monkeypatch.setattr('src.eval.eval_service.get_eval_result_repository', lambda: repo)
     monkeypatch.setattr('src.eval.eval_service.get_prompt_repository', lambda: prompt_repo)
     monkeypatch.setenv('OPENAI_API_KEY', 'k')
-    return EvalService(), repo, prompt_repo
-
+    return (EvalService(), repo, prompt_repo)
 
 def _setup_input_service(monkeypatch):
     repo = MagicMock()
     db = MagicMock()
     monkeypatch.setattr('src.eval.eval_input_service.get_eval_input_repository', lambda: repo)
     monkeypatch.setattr('src.eval.eval_input_service.get_client', lambda: db)
-    return EvalInputService(), repo, db
-
+    return (EvalInputService(), repo, db)
 
 def test_run_evals(monkeypatch):
     service, repo, prepo = _setup_eval_service(monkeypatch)
@@ -61,13 +58,11 @@ def test_run_evals(monkeypatch):
     repo.create_result.assert_called_once()
     prepo.get_prompt_by_name_version.assert_called_once_with('p', 1)
 
-
 def test_run_evals_missing_prompt(monkeypatch):
     service, repo, prepo = _setup_eval_service(monkeypatch)
     prepo.get_prompt_by_name_version.return_value = None
     with pytest.raises(ValueError):
         service.run_evals('p', 1, [])
-
 
 def test_eval_input_service_calls(monkeypatch):
     service, repo, db = _setup_input_service(monkeypatch)
@@ -78,7 +73,6 @@ def test_eval_input_service_calls(monkeypatch):
     db.delete.assert_called_once_with('AI_chats', 'c1')
     service.update_status('x', 'archived')
     repo.update_status.assert_called_once_with('x', 'archived')
-
 
 def test_eval_input_update(monkeypatch):
     service, repo, _ = _setup_input_service(monkeypatch)
