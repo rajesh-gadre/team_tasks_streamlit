@@ -48,12 +48,21 @@ def test_auth0_missing_code(monkeypatch):
     except ValueError as e:
         assert 'authorization code' in str(e)
 
-def test_session_login_flow():
+def test_session_login_flow(monkeypatch):
     st = sys.modules['streamlit']
     st.session_state = Bag()
+    called = {}
+
+    class Dummy:
+        def login(self, email):
+            called['email'] = email
+            return {'userId': 'u', 'userEmail': email, 'userTZ': 'Z'}
+
+    monkeypatch.setattr('src.auth.session.get_user_service', lambda: Dummy())
     init_session()
     assert require_auth() is False
     login_user({'email': 'e'})
+    assert called['email'] == 'e'
     assert require_auth() is True
     logout_user()
     assert require_auth() is False
