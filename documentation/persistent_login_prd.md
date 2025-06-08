@@ -21,7 +21,7 @@ All users of the Task Management System.
 ### 5.1. Core Functionality
 - **FR1: Session Persistence:** If a user successfully authenticates, their login session should persist across browser restarts on the same device and browser profile.
 - **FR2: Explicit Logout:** The existing "Logout" button must terminate the persistent session, requiring the user to log in again on their next visit.
-- **FR3: No UI Change for Login:** The login process itself will not change. The persistence will be an automatic behavior upon successful Google OAuth login.
+- **FR3: No UI Change for Login:** The login process itself will not change. The persistence will be an automatic behavior upon successful authentication with Google OAuth or Auth0.
 - **FR4: Session Token Management:** A secure mechanism (e.g., a long-lived refresh token or a persistent session cookie) will be used to maintain the session.
 
 ### 5.2. Security Considerations
@@ -45,4 +45,4 @@ All users of the Task Management System.
 
 ## 8. Assumptions
 - Users understand the implications of staying logged in on a trusted device.
-- The current Google OAuth integration can be extended to support or manage longer-lived session identifiers or refresh tokens.
+ - The current authentication integration (Google OAuth or Auth0) can be extended to support or manage longer-lived session identifiers or refresh tokens.

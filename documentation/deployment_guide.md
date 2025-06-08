@@ -8,7 +8,7 @@ Before deploying the User Task Management System, ensure you have the following:
 - Python 3.8 or higher installed
 - pip package manager
 - A Firebase project with Firestore database
-- Google OAuth credentials
+- Google OAuth credentials (or Auth0 credentials)
 - OpenAI API key
 
 ## 2. Environment Setup
@@ -76,9 +76,9 @@ service cloud.firestore {
 }
 ```
 
-## 4. Google OAuth Setup
+## 4. Authentication Setup
 
-### 4.1 Create OAuth Credentials
+### 4.1 Create Google OAuth Credentials
 
 1. Go to the [Google Cloud Console](https://console.cloud.google.com/)
 2. Create a new project or select an existing one
@@ -90,6 +90,12 @@ service cloud.firestore {
    - For local development: `http://localhost:8501/callback`
    - For production: `https://your-domain.com/callback`
 8. Save the client ID and client secret
+
+### 4.2 Create Auth0 Credentials
+1. Sign up at [Auth0](https://auth0.com/)
+2. Create a new application
+3. Configure allowed callback URLs (e.g., `http://localhost:8501/callback`)
+4. Save the domain, client ID, and client secret
 
 ## 5. Environment Variables
 
@@ -107,6 +113,14 @@ OPENAI_API_KEY=your-openai-api-key
 # Google OAuth
 GOOGLE_CLIENT_ID=your-google-client-id
 GOOGLE_CLIENT_SECRET=your-google-client-secret
+
+# Auth0 OAuth
+AUTH0_DOMAIN=your-auth0-domain
+AUTH0_CLIENT_ID=your-auth0-client-id
+AUTH0_CLIENT_SECRET=your-auth0-client-secret
+
+# Authentication method
+AUTH_TYPE=google
 
 # JWT
 JWT_SECRET_KEY=your-jwt-secret-key
@@ -233,10 +247,10 @@ The application will be available at `http://localhost:8501`.
 - Check that your project ID matches the one in your Firebase console
 - Ensure the private key is properly formatted (replace `\\n` with `\n`)
 
-#### Google OAuth Issues
+#### Authentication Issues
 - Verify that your redirect URIs are correctly configured
-- Check that your client ID and client secret are correct
-- Ensure the OAuth consent screen is properly configured
+- Check that your client credentials are correct
+- Ensure the consent screen is properly configured
 
 #### OpenAI API Issues
 - Verify that your API key is correct
