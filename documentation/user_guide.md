@@ -15,14 +15,14 @@ Open your web browser and navigate to the application URL:
 
 ### 2.2 Authentication
 
-1. On the welcome page, click the "Login with Google" button
-2. You will be redirected to Google's authentication page
-3. Select your Google account and grant the necessary permissions
+1. On the welcome page, click the login button
+2. You will be redirected to either Google or Auth0 for authentication
+3. Grant the necessary permissions
 4. After successful authentication, you will be redirected back to the application
 
 ## 3. Navigation
 
-The application has a sidebar and a main content area with tabs:
+The application has a sidebar with a navigation menu:
 
 ### 3.1 Sidebar
 
@@ -30,13 +30,12 @@ The sidebar displays:
 - Your profile information (name and profile picture)
 - A logout button
 
-### 3.2 Main Navigation Tabs
+### 3.2 Navigation Sections
 
-The main content area has four tabs:
-1. **Active Tasks**: View and manage your current tasks
-2. **Completed Tasks**: View tasks you've marked as completed
-3. **Deleted Tasks**: View and restore tasks you've deleted
-4. **AI Assistant**: Interact with the AI assistant for task-related help
+The navigation menu contains grouped sections:
+- **🧑‍💼 User**: Active Tasks, Completed Tasks, Deleted Tasks, AI Assistant
+- **🧭 Nav**: Summary, ChangeLog
+- **🛠️ Admin**: Prompt Management, Eval Candidates, Run Evals, Debug
 
 ## 4. Managing Tasks
 
@@ -133,7 +132,7 @@ After receiving a response:
 
 Your profile information is displayed in the sidebar, including:
 - Your name
-- Your profile picture (if available from Google)
+- Your profile picture (if available)
 
 ### 6.2 Logging Out
 
@@ -146,7 +145,7 @@ To log out of the application:
 ### 7.1 Data Privacy
 
 - All your tasks are private and can only be accessed by you
-- Authentication is handled securely through Google OAuth
+- Authentication is handled securely through Google OAuth or Auth0
 - Your data is stored in a secure Firestore database
 
 ### 7.2 AI Assistant Privacy
@@ -160,7 +159,7 @@ To log out of the application:
 ### 8.1 Common Issues
 
 #### Login Problems
-- Ensure you're using a valid Google account
+- Ensure you're using a valid account for the configured provider
 - Check your internet connection
 - Clear your browser cookies and try again
 

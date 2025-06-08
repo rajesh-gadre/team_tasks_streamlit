@@ -55,7 +55,7 @@ Here is the description of the endpoints in a related system that interact with 
 All operations must check that the task's `userId` matches the authenticated user.
 
 ### Authentication
-- Users authenticate via Google OAuth.
+- Users authenticate via Google OAuth or Auth0.
 - JWT tokens are issued and stored in local storage.
 - All authenticated API requests must include the JWT in the `Authorization` header as a Bearer token (e.g., `Authorization: Bearer <JWT>`).
 - API endpoints require authentication and validate the JWT token.

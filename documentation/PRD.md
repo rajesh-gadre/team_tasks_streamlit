@@ -7,7 +7,7 @@
 This document outlines the product requirements for a Streamlit-based User Task Management System with soft-delete functionality. The system will allow users to create, manage, and organize their tasks while providing the ability to recover accidentally deleted tasks.
 
 ### 1.2 Scope
-The system will be a web application built using Streamlit and Firebase Firestore as the database. It will include task management features, authentication via Google OAuth, and an AI assistant for task-related queries.
+The system will be a web application built using Streamlit and Firebase Firestore as the database. It will include task management features, authentication via Google OAuth or Auth0, and an AI assistant for task-related queries.
 
 ### 1.3 Target Audience
 - Individual users who need to manage personal tasks
@@ -27,13 +27,13 @@ A Streamlit-based task management application that allows users to:
 1. Task Management (Create, Read, Update, Delete)
 2. Soft-delete functionality with task recovery
 3. Task categorization (Active, Completed, Deleted)
-4. Google OAuth Authentication
+4. Google OAuth or Auth0 Authentication
 5. AI Assistant for task-related queries
 
 ## 3. User Stories
 
 ### 3.1 Authentication
-- As a user, I want to log in using my Google account so that I can securely access my tasks.
+- As a user, I want to log in using my Google or Auth0 account so that I can securely access my tasks.
 - As a user, I want to remain logged in across sessions so that I don't have to authenticate each time.
 
 ### 3.2 Task Management
@@ -55,8 +55,8 @@ A Streamlit-based task management application that allows users to:
 
 ## 4. Functional Requirements
 
-### 4.1 Authentication System
-- Google OAuth integration
+-### 4.1 Authentication System
+- Authentication integration (Google OAuth or Auth0)
 - JWT token management
 - Session persistence
 
@@ -130,7 +130,7 @@ A Streamlit-based task management application that allows users to:
 ### 7.1 Technical Constraints
 - Must use Streamlit for frontend
 - Must use Firebase Firestore for database
-- Must implement Google OAuth authentication
+- Must implement Google OAuth authentication with optional Auth0 support
 - Must use Langchain for OpenAI integration
 
 ### 7.2 Business Constraints
@@ -151,6 +151,7 @@ A Streamlit-based task management application that allows users to:
 - Streamlit documentation
 - Google OAuth documentation
 - Langchain documentation
+- Auth0 documentation
 
 ### 8.3 Repo Contribution Guidelines
 - Refer to AGENTS.md for repository rules

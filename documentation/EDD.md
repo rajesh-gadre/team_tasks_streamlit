@@ -20,8 +20,8 @@ The User Task Management System will be built using Streamlit for the frontend a
         ▼                       ▼                       ▼
 ┌─────────────────┐     ┌─────────────────┐     ┌─────────────────┐
 │                 │     │                 │     │                 │
-│  Google OAuth   │     │  OpenAI API     │     │  Langchain      │
-│  Authentication │     │  (via Langchain)│     │  Framework      │
+│  OAuth          │     │  OpenAI API     │     │  Langchain      │
+│  (Google/Auth0) │     │  (via Langchain)│     │  Framework      │
 │                 │     │                 │     │                 │
 └─────────────────┘     └─────────────────┘     └─────────────────┘
 ```
@@ -30,7 +30,7 @@ The User Task Management System will be built using Streamlit for the frontend a
 - **Frontend**: Streamlit
 - **Backend**: Python with Streamlit
 - **Database**: Firebase Firestore
-- **Authentication**: Google OAuth
+- **Authentication**: Google OAuth or Auth0
 - **AI Integration**: Langchain with OpenAI
 
 ## 2. Database Design
@@ -95,8 +95,8 @@ Document:
 
 ## 3. Component Design
 
-### 3.1 Authentication Module
-- Implement Google OAuth authentication
+-### 3.1 Authentication Module
+- Implement Google OAuth authentication with optional Auth0 support
 - Generate and manage JWT tokens
 - Store tokens in browser local storage
 - Validate tokens for all API requests
@@ -110,7 +110,7 @@ Document:
 - Task restoration
 
 ### 3.3 UI Components
-- Navigation bar with tabs for different views
+- Navigation menu using Streamlit navigation for different views
 - Task list component with filtering
 - Task detail component
 - Task form component for creation/editing
@@ -129,7 +129,7 @@ Document:
 #### 4.1.1 Authentication Functions
 ```python
 def login_with_google():
-    # Implement Google OAuth login
+    # Implement OAuth login (Google or Auth0)
     pass
 
 def validate_token(token):
@@ -320,6 +320,7 @@ team_tasks_streamlit/
 │   ├── auth/                   # Authentication module
 │   │   ├── __init__.py
 │   │   ├── google_auth.py      # Google OAuth implementation
+│   │   ├── auth0_auth.py       # Auth0 implementation
 │   │   └── session.py          # Session management
 │   ├── database/               # Database module
 │   │   ├── __init__.py
@@ -392,6 +393,14 @@ OPENAI_API_KEY=your-openai-api-key
 # Google OAuth
 GOOGLE_CLIENT_ID=your-google-client-id
 GOOGLE_CLIENT_SECRET=your-google-client-secret
+
+# Auth0 OAuth
+AUTH0_DOMAIN=your-auth0-domain
+AUTH0_CLIENT_ID=your-auth0-client-id
+AUTH0_CLIENT_SECRET=your-auth0-client-secret
+
+# Authentication method
+AUTH_TYPE=google
 ```
 
 ### 13.3 Repo Contribution Guidelines
