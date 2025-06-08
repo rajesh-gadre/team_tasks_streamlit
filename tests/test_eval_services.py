@@ -47,8 +47,10 @@ def _setup_eval_service(monkeypatch):
 
 def _setup_input_service(monkeypatch):
     repo = MagicMock()
+    db = MagicMock()
     monkeypatch.setattr('src.eval.eval_input_service.get_eval_input_repository', lambda: repo)
-    return EvalInputService(), repo
+    monkeypatch.setattr('src.eval.eval_input_service.get_client', lambda: db)
+    return EvalInputService(), repo, db
 
 
 def test_run_evals(monkeypatch):
@@ -68,10 +70,11 @@ def test_run_evals_missing_prompt(monkeypatch):
 
 
 def test_eval_input_service_calls(monkeypatch):
-    service, repo = _setup_input_service(monkeypatch)
+    service, repo, db = _setup_input_service(monkeypatch)
     service.get_latest_inputs(5)
     repo.get_latest_inputs.assert_called_once_with(5)
-    service.add_from_chat({'a': 1}, 'p')
-    repo.create_from_chat.assert_called_once_with({'a': 1}, 'p')
+    service.add_from_chat({'id': 'c1'}, 'p')
+    repo.create_from_chat.assert_called_once_with({'id': 'c1'}, 'p')
+    db.delete.assert_called_once_with('AI_chats', 'c1')
     service.update_status('x', 'archived')
     repo.update_status.assert_called_once_with('x', 'archived')
