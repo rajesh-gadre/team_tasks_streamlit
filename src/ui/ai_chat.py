@@ -5,7 +5,7 @@ Handles rendering of AI chat interface and interactions.
 import streamlit as st
 import logging
 from typing import Dict, Any
-from src.ai.openai_service import get_openai_service, TaskChanges
+from src.ai.llm_service import get_llm_service, TaskChanges
 import traceback
 from src.database.firestore import get_client
 
@@ -81,7 +81,7 @@ def render_ai_chat():
             ai_input_with_id = st.session_state.get(
                 "ai_input_with_id", f"{st.session_state.ai_input}\n\nuser_id: {user_id}"
             )
-            result = get_openai_service().process_chat(user_id, ai_input_with_id)
+            result = get_llm_service().process_chat(user_id, ai_input_with_id)
             logger.info(f"\n\n\nAI response: {result}")
             if result:
                 st.session_state.ai_response = result.get("response")

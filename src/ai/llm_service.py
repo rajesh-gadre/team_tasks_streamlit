@@ -9,7 +9,7 @@ import streamlit as st
 from langchain_core.pydantic_v1 import BaseModel
 from langchain_core.messages import SystemMessage, HumanMessage
 from langchain_openai import ChatOpenAI
-from src.ai.openai_executor import OpenAIExecutor
+from src.ai.llm_executor import LlmExecutor
 
 from src.tasks.task_service import get_task_service
 from src.database.firestore import get_client
@@ -80,7 +80,7 @@ def get_all_chats():
         raise
 
 
-class OpenAIService:
+class LlmService:
     def __init__(self):
         self.api_key = os.environ.get('OPENAI_API_KEY')
         self.model = os.environ.get('OPENAI_MODEL', 'gpt-4.1-mini')
@@ -89,7 +89,7 @@ class OpenAIService:
             raise ValueError("Missing OpenAI API key")
         self.db = get_client()
         self.collection = 'AI_chats'
-        self.executor = OpenAIExecutor(self)
+        self.executor = LlmExecutor(self)
     
     def process_chat(self, user_id: str, input_text: str) -> Dict[str, Any]:
         try:
@@ -323,12 +323,12 @@ class OpenAIService:
         return False
     
 
-_openai_service: Optional[OpenAIService] = None
+_llm_service: Optional[LlmService] = None
 
 
-def get_openai_service() -> OpenAIService:
-    """Return the OpenAIService singleton."""
-    global _openai_service
-    if _openai_service is None:
-        _openai_service = OpenAIService()
-    return _openai_service
+def get_llm_service() -> LlmService:
+    """Return the LlmService singleton."""
+    global _llm_service
+    if _llm_service is None:
+        _llm_service = LlmService()
+    return _llm_service

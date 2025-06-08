@@ -2,7 +2,7 @@ import streamlit as st
 from contextlib import nullcontext
 from typing import Any, Dict
 
-class OpenAIExecutor:
+class LlmExecutor:
     def __init__(self, service):
         self.service = service
 
@@ -13,6 +13,6 @@ class OpenAIExecutor:
         with spinner("Processing your request..."):
             content1 = self.service._first_call(system_prompt, user_input, task_list)
             resp = self.service._second_call(content1)
-            final_response = self.service._OpenAIService__third_call(user_id, resp)
+            final_response = self.service._LlmService__third_call(user_id, resp)
         return final_response
 

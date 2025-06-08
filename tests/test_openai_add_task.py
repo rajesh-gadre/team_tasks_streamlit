@@ -37,14 +37,14 @@ class DummyChat:
 lc_openai.ChatOpenAI = DummyChat
 sys.modules['langchain_openai'] = lc_openai
 
-from ai.openai_service import OpenAIService
+from ai.llm_service import LlmService
 
 # helper to create service with fake API key
 
 def create_service(monkeypatch):
     os.environ.setdefault('OPENAI_API_KEY', 'test-key')
-    monkeypatch.setattr('ai.openai_service.get_client', lambda: SimpleNamespace())
-    return OpenAIService()
+    monkeypatch.setattr('ai.llm_service.get_client', lambda: SimpleNamespace())
+    return LlmService()
 
 
 def test_add_task_valid(monkeypatch):
@@ -57,7 +57,7 @@ def test_add_task_valid(monkeypatch):
             captured['task_data'] = task_data
             return 'task123'
 
-    monkeypatch.setattr('ai.openai_service.get_task_service', lambda: DummyTS())
+    monkeypatch.setattr('ai.llm_service.get_task_service', lambda: DummyTS())
 
     payload = {
         'title': 'New Task',

@@ -331,7 +331,7 @@ team_tasks_streamlit/
 │   │   └── task_repository.py  # Task data access
 │   ├── ai/                     # AI integration module
 │   │   ├── __init__.py
-│   │   ├── openai_service.py   # OpenAI integration
+│   │   ├── llm_service.py   # OpenAI integration
 │   │   └── prompt_repository.py # Prompt management
 │   └── ui/                     # UI components
 │       ├── __init__.py

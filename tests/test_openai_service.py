@@ -46,26 +46,26 @@ root_dir = Path(__file__).resolve().parents[1]
 sys.path.append(str(root_dir))
 sys.path.append(str(root_dir / 'src'))
 
-from ai.openai_service import OpenAIService, TaskChanges, AIPrompt
-from ai.openai_executor import OpenAIExecutor
+from ai.llm_service import LlmService, TaskChanges, AIPrompt
+from ai.llm_executor import LlmExecutor
 
 
 def test_call_openai(monkeypatch):
     monkeypatch.setenv('OPENAI_API_KEY', 'test-key')
-    monkeypatch.setattr('ai.openai_service.get_client', lambda: SimpleNamespace())
+    monkeypatch.setattr('ai.llm_service.get_client', lambda: SimpleNamespace())
     dummy_ts = SimpleNamespace(
         get_active_tasks=lambda uid: [],
         get_completed_tasks=lambda uid: [],
         get_deleted_tasks=lambda uid: []
     )
-    monkeypatch.setattr('ai.openai_service.get_task_service', lambda: dummy_ts)
-    service = OpenAIService()
-    executor = OpenAIExecutor(service)
+    monkeypatch.setattr('ai.llm_service.get_task_service', lambda: dummy_ts)
+    service = LlmService()
+    executor = LlmExecutor(service)
 
     monkeypatch.setattr(service, '_first_call', lambda sp, ui, tl: 'content')
     tc = TaskChanges(new_tasks=[], modified_tasks=[])
     monkeypatch.setattr(service, '_second_call', lambda c1: tc)
-    monkeypatch.setattr(service, '_OpenAIService__third_call', lambda uid, r: 'done')
+    monkeypatch.setattr(service, '_LlmService__third_call', lambda uid, r: 'done')
 
     result = executor.execute('user', 'prompt', 'input', {}, 'chat1')
     assert result == 'done'
@@ -84,16 +84,16 @@ def test_process_chat_records_prompt(monkeypatch):
         captured['update'] = data
 
     dummy_db = SimpleNamespace(create=create, update=update)
-    monkeypatch.setattr('ai.openai_service.get_client', lambda: dummy_db)
+    monkeypatch.setattr('ai.llm_service.get_client', lambda: dummy_db)
 
     dummy_ts = SimpleNamespace(
         get_active_tasks=lambda uid: [],
         get_completed_tasks=lambda uid: [],
         get_deleted_tasks=lambda uid: []
     )
-    monkeypatch.setattr('ai.openai_service.get_task_service', lambda: dummy_ts)
+    monkeypatch.setattr('ai.llm_service.get_task_service', lambda: dummy_ts)
 
-    service = OpenAIService()
+    service = LlmService()
     monkeypatch.setattr(service, '_get_system_prompt', lambda: AIPrompt(prompt_name='AI_Tasks', text='t', version=3))
     monkeypatch.setattr(service.executor, 'execute', lambda u, sp, it, tl, cid: TaskChanges(new_tasks=[], modified_tasks=[]))
 
