@@ -6,4 +6,4 @@ def get_eval_inputs():
 
 
 def get_eval_results():
-    return get_client().get_all('AI_Eval_Results')
+    return get_client().get_all('Eval_Results')
