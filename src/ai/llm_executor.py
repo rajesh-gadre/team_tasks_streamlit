@@ -87,12 +87,12 @@ class LlmExecutor:
         try:
             ts = get_task_service()
             for new_task in resp.new_tasks:
-                task_data = new_task.dict(exclude_none=True)
+                task_data = getattr(new_task, 'model_dump', new_task.dict)(exclude_none=True)
                 logger.debug(f"Creating task for {user_id}: {task_data}")
                 ts.create_task(user_id, task_data)
             for mod_task in resp.modified_tasks:
                 task_id = mod_task.id
-                raw_data = mod_task.dict(exclude={'id'})
+                raw_data = getattr(mod_task, 'model_dump', mod_task.dict)(exclude={'id'})
                 update_data = {k: v for k, v in raw_data.items() if v is not None}
                 logger.debug(f"Updating task {task_id} for {user_id} with {update_data}")
                 ts.update_task(user_id, task_id, update_data)
