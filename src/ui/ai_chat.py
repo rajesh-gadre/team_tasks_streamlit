@@ -28,10 +28,10 @@ def __collect_feedback(chat_id: str, resp: TaskChanges) -> bool:
     with st.form(f"feedback_form_{chat_id}"):
         st.subheader("New Tasks")
         for t in resp.new_tasks:
-            st.json(t.dict(exclude_none=True))
+            st.json(getattr(t, 'model_dump', t.dict)(exclude_none=True))
         st.subheader("Modified Tasks")
         for t in resp.modified_tasks:
-            st.json(t.dict(exclude_none=True))
+            st.json(getattr(t, 'model_dump', t.dict)(exclude_none=True))
         rating = st.radio(
             "Are these updates correct?",
             ("👍", "👎"),
