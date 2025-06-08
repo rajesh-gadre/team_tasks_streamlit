@@ -187,63 +187,99 @@ def debug_eval_results():
     df = pd.DataFrame(get_eval_results())
     st.dataframe(df)
 
+def _debug_session_state_tab():
+    debug_session_state()
+
+
+def _debug_ai_chats_tab():
+    df = pd.DataFrame(get_all_chats())
+    st.dataframe(df)
+
+
+def _debug_tasks_tab():
+    task_service = get_task_service()
+    tasks = task_service.get_all_tasks()
+    task_list = [
+        {
+            "id": task.id,
+            "userId": task.user_id,
+            "title": task.title,
+            "status": task.status,
+            "description": task.description,
+            "dueDate": (
+                task.due_date.isoformat()
+                if hasattr(task.due_date, "isoformat")
+                else task.due_date
+            ),
+            "createdAt": (
+                task.created_at.isoformat()
+                if hasattr(task.created_at, "isoformat")
+                else task.created_at
+            ),
+            "updatedAt": (
+                task.updated_at.isoformat()
+                if hasattr(task.updated_at, "isoformat")
+                else task.updated_at
+            ),
+            "notes": task.notes,
+            "updates_count": len(task.updates) if task.updates else 0,
+        }
+        for task in tasks
+    ]
+    df = pd.DataFrame(task_list)
+    st.dataframe(df)
+
+
+def _debug_prompts_tab():
+    prompt_repository = get_prompt_repository()
+    prompts = prompt_repository.get_all_prompts()
+    prompt_list = [prompt.to_dict() for prompt in prompts]
+    df = pd.DataFrame(prompt_list)
+    st.dataframe(df)
+
+
+def _debug_eval_inputs_tab():
+    debug_eval_inputs()
+
+
+def _debug_eval_results_tab():
+    debug_eval_results()
+
+
+def _delete_ai_chats_tab():
+    delete_count = st.number_input("Delete count", min_value=1, max_value=100, value=1)
+    confirm = st.checkbox("Confirm deletion")
+    if st.button("Delete AI Chats one-by-one") and confirm:
+        delete_all_chats_one_by_one(delete_count)
+
+
 def debug_page():
     st.header("Debug Information")
-    with st.expander("Session State"):
-        debug_session_state()
-    with st.expander("AI Chats"):
-        df = pd.DataFrame(get_all_chats())
-        st.dataframe(df)
-    with st.expander("Tasks"):
-        task_service = get_task_service()
-        tasks = task_service.get_all_tasks()
-        # Convert tasks to a simplified dict format that can be displayed in a dataframe
-        task_list = [
-            {
-                "id": task.id,
-                "userId": task.user_id,
-                "title": task.title,
-                "status": task.status,
-                "description": task.description,
-                "dueDate": (
-                    task.due_date.isoformat()
-                    if hasattr(task.due_date, "isoformat")
-                    else task.due_date
-                ),
-                "createdAt": (
-                    task.created_at.isoformat()
-                    if hasattr(task.created_at, "isoformat")
-                    else task.created_at
-                ),
-                "updatedAt": (
-                    task.updated_at.isoformat()
-                    if hasattr(task.updated_at, "isoformat")
-                    else task.updated_at
-                ),
-                "notes": task.notes,
-                "updates_count": len(task.updates) if task.updates else 0,
-            }
-            for task in tasks
+    tabs = st.tabs(
+        [
+            "Session State",
+            "AI Chats",
+            "Tasks",
+            "Prompts",
+            "AI Eval Inputs",
+            "AI Eval Results",
+            "Delete AI Chats",
         ]
-        df = pd.DataFrame(task_list)
-        st.dataframe(df)
-    with st.expander("Prompts"):
-        prompt_repository = get_prompt_repository()
-        # Display all prompts rather than just the latest versions
-        prompts = prompt_repository.get_all_prompts()
-        prompt_list = [prompt.to_dict() for prompt in prompts]
-        df = pd.DataFrame(prompt_list)
-        st.dataframe(df)
-    with st.expander("AI Eval Inputs"):
-        debug_eval_inputs()
-    with st.expander("AI Eval Results"):
-        debug_eval_results()
-    with st.expander("Delete AI Chats"):
-        delete_count = st.number_input(
-            "Delete count", min_value=1, max_value=100, value=1
-        )
-        if st.button("Delete AI Chats one-by-one"):
-            delete_all_chats_one_by_one(delete_count)
+    )
+    with tabs[0]:
+        _debug_session_state_tab()
+    with tabs[1]:
+        _debug_ai_chats_tab()
+    with tabs[2]:
+        _debug_tasks_tab()
+    with tabs[3]:
+        _debug_prompts_tab()
+    with tabs[4]:
+        _debug_eval_inputs_tab()
+    with tabs[5]:
+        _debug_eval_results_tab()
+    with tabs[6]:
+        _delete_ai_chats_tab()
 
 def render_main_page():
     # Define pages for navigation
