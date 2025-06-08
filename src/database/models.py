@@ -413,6 +413,7 @@ class AIEvalResult:
         prompt_name: str | None = None,
         prompt_version: int | None = None,
         result: str | None = None,
+        llm_judge_says: str | None = None,
         created_at: Optional[datetime] = None,
     ):
         self.id = id
@@ -420,6 +421,7 @@ class AIEvalResult:
         self.prompt_name = prompt_name
         self.prompt_version = prompt_version
         self.result = result
+        self.llm_judge_says = llm_judge_says
         self.created_at = created_at
 
     @classmethod
@@ -430,6 +432,7 @@ class AIEvalResult:
             prompt_name=data.get("prompt_name"),
             prompt_version=data.get("prompt_version"),
             result=data.get("result"),
+            llm_judge_says=data.get("LLMJudgeSays"),
             created_at=data.get("createdAt"),
         )
 
@@ -440,5 +443,7 @@ class AIEvalResult:
             "prompt_version": self.prompt_version,
             "result": self.result,
         }
+        if self.llm_judge_says is not None:
+            data["LLMJudgeSays"] = self.llm_judge_says
         return data
 

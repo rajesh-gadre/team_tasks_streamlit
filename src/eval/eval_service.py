@@ -27,11 +27,18 @@ class EvalService:
         for ev in eval_inputs:
             messages = [SystemMessage(content=prompt.text), HumanMessage(content=ev.input_text)]
             response = chat.invoke(messages)
+            judge_msgs = [
+                SystemMessage(content="Please evaluate this result as per the criteria provided"),
+                SystemMessage(content=ev.eval_prompt or ""),
+                HumanMessage(content=getattr(response, "content", str(response)))
+            ]
+            judge = chat.invoke(judge_msgs)
             result = AIEvalResult(
                 eval_input_id=ev.id,
                 prompt_name=prompt_name,
                 prompt_version=version,
                 result=getattr(response, 'content', str(response)),
+                llm_judge_says=getattr(judge, 'content', str(judge)),
             )
             res_id = self.repo.create_result(result)
             result_ids.append(res_id)
