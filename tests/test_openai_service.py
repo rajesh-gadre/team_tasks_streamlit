@@ -46,8 +46,9 @@ root_dir = Path(__file__).resolve().parents[1]
 sys.path.append(str(root_dir))
 sys.path.append(str(root_dir / 'src'))
 
-from ai.llm_service import LlmService, TaskChanges, AIPrompt
+from ai.llm_service import LlmService, AIPrompt
 from ai.llm_executor import LlmExecutor
+from ai.llm_models import TaskChanges
 
 
 def test_call_openai(monkeypatch):
@@ -62,10 +63,10 @@ def test_call_openai(monkeypatch):
     service = LlmService()
     executor = LlmExecutor(service)
 
-    monkeypatch.setattr(service, '_first_call', lambda sp, ui, tl: 'content')
+    monkeypatch.setattr(executor, '_first_call', lambda sp, ui, tl: 'content')
     tc = TaskChanges(new_tasks=[], modified_tasks=[])
-    monkeypatch.setattr(service, '_second_call', lambda c1: tc)
-    monkeypatch.setattr(service, '_LlmService__third_call', lambda uid, r: 'done')
+    monkeypatch.setattr(executor, '_second_call', lambda c1: tc)
+    monkeypatch.setattr(executor, '_LlmExecutor__third_call', lambda uid, r: 'done')
 
     result = executor.execute('user', 'prompt', 'input', {}, 'chat1')
     assert result == 'done'
