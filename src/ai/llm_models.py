@@ -3,6 +3,7 @@ from typing import List, Optional
 from pydantic import BaseModel
 
 class FirestoreEncoder(json.JSONEncoder):
+
     def default(self, obj):
         if hasattr(obj, 'isoformat'):
             return obj.isoformat()
