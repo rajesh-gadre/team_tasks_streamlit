@@ -13,8 +13,8 @@ class EvalInputService:
     def get_latest_inputs(self, count: int = 10) -> List[AIEvalInput]:
         return self.repository.get_latest_inputs(count)
 
-    def add_from_chat(self, chat_data: Dict[str, Any]) -> str:
-        return self.repository.create_from_chat(chat_data)
+    def add_from_chat(self, chat_data: Dict[str, Any], eval_prompt: str) -> str:
+        return self.repository.create_from_chat(chat_data, eval_prompt)
 
     def update_status(self, doc_id: str, status: str) -> bool:
         return self.repository.update_status(doc_id, status)

@@ -22,11 +22,12 @@ class EvalInputRepository:
         )
         return [AIEvalInput.from_dict(d) for d in docs]
 
-    def create_from_chat(self, chat_data: Dict[str, Any]) -> str:
+    def create_from_chat(self, chat_data: Dict[str, Any], eval_prompt: str) -> str:
         data = {
             'user_id': chat_data.get('user_id'),
             'inputText': chat_data.get('inputText'),
             'Response': chat_data.get('Response'),
+            'evalPrompt': eval_prompt,
             'status': EvalStatus.ACTIVE,
         }
         return self.db.create(self.collection, data)

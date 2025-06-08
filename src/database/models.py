@@ -356,6 +356,7 @@ class AIEvalInput:
         user_id: str = None,
         input_text: str = None,
         response: Optional[str] = None,
+        eval_prompt: str | None = None,
         status: str = EvalStatus.ACTIVE,
         created_at: Optional[datetime] = None,
         updated_at: Optional[datetime] = None,
@@ -364,6 +365,7 @@ class AIEvalInput:
         self.user_id = user_id
         self.input_text = input_text
         self.response = response
+        self.eval_prompt = eval_prompt
         self.status = status
         self.created_at = created_at
         self.updated_at = updated_at
@@ -375,6 +377,7 @@ class AIEvalInput:
             user_id=data.get('user_id'),
             input_text=data.get('inputText'),
             response=data.get('Response'),
+            eval_prompt=data.get('evalPrompt'),
             status=data.get('status', EvalStatus.ACTIVE),
             created_at=data.get('createdAt'),
             updated_at=data.get('updatedAt'),
@@ -388,6 +391,8 @@ class AIEvalInput:
         }
         if self.response is not None:
             data['Response'] = self.response
+        if self.eval_prompt is not None:
+            data['evalPrompt'] = self.eval_prompt
         return data
 
     def validate(self) -> bool:
