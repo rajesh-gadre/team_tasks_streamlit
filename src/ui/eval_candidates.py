@@ -18,7 +18,11 @@ def _load_ai_chats(count: int):
 
 def _render_chat_row(chat):
     cols = st.columns([4, 2, 1, 1])
-    cols[0].markdown(f"**{chat.get('inputText','')}**")
+    input_text = chat.get('inputText', '')
+    if 'user_id' in input_text:
+        input_text = input_text.split('user_id')[0]
+    input_text = input_text.rstrip('\n')
+    cols[0].markdown(f"**{input_text}**")
     prompt = cols[1].text_input("Prompt", key=f"prompt_{chat['id']}")
     if cols[2].button("Add to Evals", key=f"add_{chat['id']}"):
         get_eval_input_service().add_from_chat(chat, prompt)
@@ -44,7 +48,12 @@ def _render_chat_row(chat):
 
 def _render_eval_row(ev):
     cols = st.columns([4, 1, 1])
-    cols[0].markdown(f"**{ev.input_text}** - _{ev.status}_")
+
+    input_text = ev.input_text
+    if 'user_id' in input_text:
+        input_text = input_text.split('user_id')[0]
+    input_text = input_text.rstrip('\n')
+    cols[0].markdown(f"**{input_text}** - _{ev.status}_")
     toggle = EvalStatus.ARCHIVED if ev.status == EvalStatus.ACTIVE else EvalStatus.ACTIVE
     toggle_text = "Archive" if ev.status == EvalStatus.ACTIVE else "Unarchive"
     if cols[1].button(toggle_text, key=f"toggle_{ev.id}"):
