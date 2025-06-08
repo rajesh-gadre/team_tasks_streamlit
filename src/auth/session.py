@@ -1,6 +1,7 @@
 import logging
 from typing import Dict, Optional, Any
 import streamlit as st
+from src.users.user_service import get_user_service
 logger = logging.getLogger(__name__)
 
 def init_session():
@@ -12,7 +13,12 @@ def init_session():
         st.session_state.auth_message = ''
 
 def login_user(user_info: Dict[str, Any]):
+    record = get_user_service().login(user_info.get('email'))
+    user_info.update(record)
     st.session_state.user = user_info
+    st.session_state.userId = record['userId']
+    st.session_state.userEmail = record['userEmail']
+    st.session_state.userTZ = record['userTZ']
     st.session_state.is_authenticated = True
     st.session_state.auth_message = f"Logged in as {user_info.get('name', user_info.get('email', 'User'))}"
     logger.info(f"User logged in: {user_info.get('email')}")
