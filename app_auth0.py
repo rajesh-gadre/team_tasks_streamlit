@@ -11,6 +11,7 @@ from src.auth.auth0_auth import Auth0Auth
 from src.ai.chat_service import delete_all_chats_one_by_one, get_all_chats
 from src.tasks.task_service import get_task_service
 from src.ai.prompt_repository import get_prompt_repository
+from src.eval.debug_data import get_eval_inputs, get_eval_results
 import pandas as pd
 
 load_dotenv()
@@ -117,9 +118,17 @@ def main():
                     session_items[key] = str(value)
                 else:
                     session_items[key] = value
-            
+
             # Display session state as JSON
             st.json(session_items)
+
+        def debug_eval_inputs():
+            df = pd.DataFrame(get_eval_inputs())
+            st.dataframe(df)
+
+        def debug_eval_results():
+            df = pd.DataFrame(get_eval_results())
+            st.dataframe(df)
 
         def debug_page():
             st.header("Debug Information")
@@ -157,6 +166,10 @@ def main():
                 prompt_list=[prompt.to_dict() for prompt in prompts]
                 df=pd.DataFrame(prompt_list)
                 st.dataframe(df)
+            with st.expander("AI Eval Inputs"):
+                debug_eval_inputs()
+            with st.expander("AI Eval Results"):
+                debug_eval_results()
             with st.expander("Delete AI Chats"):
                 if st.button("Delete AI Chats"):
                     delete_all_chats()
