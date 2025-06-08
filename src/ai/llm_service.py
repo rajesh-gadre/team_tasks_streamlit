@@ -6,14 +6,13 @@ import traceback
 from typing import Any, Dict, List, Optional
 
 import streamlit as st
-from langchain_core.pydantic_v1 import BaseModel
 from langchain_core.messages import SystemMessage, HumanMessage
 from langchain_openai import ChatOpenAI
 from src.ai.llm_executor import LlmExecutor
 
 from src.tasks.task_service import get_task_service
 from src.database.firestore import get_client
-from src.database.models import AIChat, AIPrompt, PromptStatus
+from src.database.models import AIPrompt, PromptStatus
 from src.ai.prompt_repository import get_prompt_repository
 from pydantic import BaseModel
 
@@ -47,37 +46,6 @@ class TaskChanges(BaseModel):
     new_tasks: List[NewTask]
     modified_tasks: List[ModifiedTask]
 
-def delete_all_chats_one_by_one(n: int):
-    try:
-        client = get_client()
-        source_collection = 'AI_chats'
-        archive_collection = 'AI_chats_archive'
-
-        docs = client.db.collection(source_collection).stream()
-        count = 0
-        for doc in docs:
-            data = doc.to_dict()
-            client.db.collection(archive_collection).document(doc.id).set(data)
-            doc.reference.delete()
-            count += 1
-            if count >= n:
-                break
-
-        logger.info(
-            f"Archived and deleted {count} documents from {source_collection}"
-        )
-    except Exception as e:
-        logger.error(
-            f"Error archiving and deleting AI chats: {str(e)}"
-        )
-        raise
-
-def get_all_chats():
-    try:
-        return get_client().get_all('AI_chats')
-    except Exception as e:
-        logger.error(f"Error getting all AI chats: {str(e)}")
-        raise
 
 
 class LlmService:

@@ -15,7 +15,7 @@ if AUTH_TYPE == "auth0":
     from src.auth.auth0_auth import Auth0Auth
 else:
     from aiclub_auth_lib.oauth import AIClubGoogleAuth
-from src.ai.llm_service import delete_all_chats_one_by_one, get_all_chats
+from src.ai.chat_service import delete_all_chats_one_by_one, get_all_chats
 from src.tasks.task_service import get_task_service
 from src.ai.prompt_repository import get_prompt_repository
 import pandas as pd
