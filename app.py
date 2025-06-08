@@ -18,6 +18,7 @@ else:
 from src.ai.chat_service import delete_all_chats_one_by_one, get_all_chats
 from src.tasks.task_service import get_task_service
 from src.ai.prompt_repository import get_prompt_repository
+from src.eval.debug_data import get_eval_inputs, get_eval_results
 import pandas as pd
 
 for key, value in st.secrets.items():
@@ -154,6 +155,14 @@ def main():
             # Display session state as JSON
             st.json(session_items)
 
+        def debug_eval_inputs():
+            df = pd.DataFrame(get_eval_inputs())
+            st.dataframe(df)
+
+        def debug_eval_results():
+            df = pd.DataFrame(get_eval_results())
+            st.dataframe(df)
+
         def debug_page():
             st.header("Debug Information")
             with st.expander("Session State"):
@@ -201,6 +210,10 @@ def main():
                 prompt_list = [prompt.to_dict() for prompt in prompts]
                 df = pd.DataFrame(prompt_list)
                 st.dataframe(df)
+            with st.expander("AI Eval Inputs"):
+                debug_eval_inputs()
+            with st.expander("AI Eval Results"):
+                debug_eval_results()
             with st.expander("Delete AI Chats"):
                 delete_count = st.number_input(
                     "Delete count", min_value=1, max_value=100, value=1
