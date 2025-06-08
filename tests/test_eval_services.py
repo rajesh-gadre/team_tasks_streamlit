@@ -56,6 +56,7 @@ def test_run_evals(monkeypatch):
     result = service.run_evals('p', 1, [ev])
     assert result == ['rid']
     repo.create_result.assert_called_once()
+    assert repo.create_result.call_args[0][0].input_text == 'q'
     prepo.get_prompt_by_name_version.assert_called_once_with('p', 1)
 
 def test_run_evals_missing_prompt(monkeypatch):
