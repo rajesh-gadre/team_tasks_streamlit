@@ -78,3 +78,9 @@ def test_eval_input_service_calls(monkeypatch):
     db.delete.assert_called_once_with('AI_chats', 'c1')
     service.update_status('x', 'archived')
     repo.update_status.assert_called_once_with('x', 'archived')
+
+
+def test_eval_input_update(monkeypatch):
+    service, repo, _ = _setup_input_service(monkeypatch)
+    service.update_input('x', {'inputText': 'n'})
+    repo.update_input.assert_called_once_with('x', {'inputText': 'n'})

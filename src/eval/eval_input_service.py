@@ -24,6 +24,9 @@ class EvalInputService:
     def update_status(self, doc_id: str, status: str) -> bool:
         return self.repository.update_status(doc_id, status)
 
+    def update_input(self, doc_id: str, data: Dict[str, Any]) -> bool:
+        return self.repository.update_input(doc_id, data)
+
 _eval_service: Optional[EvalInputService] = None
 
 

@@ -35,6 +35,9 @@ class EvalInputRepository:
     def update_status(self, doc_id: str, status: str) -> bool:
         return self.db.update(self.collection, doc_id, {'status': status})
 
+    def update_input(self, doc_id: str, data: Dict[str, Any]) -> bool:
+        return self.db.update(self.collection, doc_id, data)
+
 _eval_repo: EvalInputRepository | None = None
 
 
