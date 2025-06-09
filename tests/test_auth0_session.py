@@ -54,15 +54,17 @@ def test_session_login_flow(monkeypatch):
     called = {}
 
     class Dummy:
-        def login(self, email):
+        def login(self, email, name=None):
             called['email'] = email
+            called['name'] = name
             return {'userId': 'u', 'userEmail': email, 'userTZ': 'Z'}
 
     monkeypatch.setattr('src.auth.session.get_user_service', lambda: Dummy())
     init_session()
     assert require_auth() is False
-    login_user({'email': 'e'})
+    login_user({'email': 'e', 'name': 'n'})
     assert called['email'] == 'e'
+    assert called['name'] == 'n'
     assert require_auth() is True
     logout_user()
     assert require_auth() is False

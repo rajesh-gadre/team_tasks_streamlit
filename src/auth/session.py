@@ -13,7 +13,7 @@ def init_session():
         st.session_state.auth_message = ''
 
 def login_user(user_info: Dict[str, Any]):
-    record = get_user_service().login(user_info.get('email'))
+    record = get_user_service().login(user_info.get('email'), user_info.get('name'))
     user_info.update(record)
     st.session_state.user = user_info
     st.session_state.userId = record['userId']

@@ -11,22 +11,38 @@ class DummyRepo:
         if email == 'e':
             return {'userId': 'u1', 'userEmail': 'e', 'userTZ': 'Z'}
         return None
-    def create_user(self, email, tz):
-        self.calls.append(('create', email, tz))
-        return {'userId': 'n1', 'userEmail': email, 'userTZ': tz}
+    def create_user(self, email, tz, name=None):
+        self.calls.append(('create', email, tz, name))
+        rec = {'userId': 'n1', 'userEmail': email, 'userTZ': tz}
+        if name:
+            rec['userName'] = name
+        return rec
+
+class DummyRoleService:
+    def __init__(self):
+        self.calls = []
+    def ensure_default_role(self, user_id):
+        self.calls.append(user_id)
+        return {'id': 'r1', 'userId': user_id, 'role': 'regular'}
 
 def test_login_existing(monkeypatch):
     repo = DummyRepo()
+    roles = DummyRoleService()
     monkeypatch.setattr('src.users.user_service.get_user_repository', lambda: repo)
+    monkeypatch.setattr('src.users.user_service.get_user_role_service', lambda: roles)
     service = UserService()
     record = service.login('e')
     assert record['userId'] == 'u1'
     assert repo.calls == [('get', 'e')]
+    assert roles.calls == ['u1']
 
 def test_login_new(monkeypatch):
     repo = DummyRepo()
+    roles = DummyRoleService()
     monkeypatch.setattr('src.users.user_service.get_user_repository', lambda: repo)
+    monkeypatch.setattr('src.users.user_service.get_user_role_service', lambda: roles)
     service = UserService()
-    record = service.login('n')
+    record = service.login('n', 'Name')
     assert record['userTZ'] == 'America/Los_Angeles'
-    assert repo.calls == [('get', 'n'), ('create', 'n', 'America/Los_Angeles')]
+    assert repo.calls == [('get', 'n'), ('create', 'n', 'America/Los_Angeles', 'Name')]
+    assert roles.calls == ['n1']
