@@ -20,6 +20,9 @@ class UserService:
     def get_users(self):
         return self.repo.get_users()
 
+    def update_timezone(self, user_id: str, tz: str) -> bool:
+        return self.repo.update_user_timezone(user_id, tz)
+
 _service: UserService | None = None
 
 def get_user_service() -> UserService:

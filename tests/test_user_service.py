@@ -17,6 +17,9 @@ class DummyRepo:
         if name:
             rec['userName'] = name
         return rec
+    def update_user_timezone(self, user_id, tz):
+        self.calls.append(('update_tz', user_id, tz))
+        return True
 
 class DummyRoleService:
     def __init__(self):
@@ -46,3 +49,12 @@ def test_login_new(monkeypatch):
     assert record['userTZ'] == 'America/Los_Angeles'
     assert repo.calls == [('get', 'n'), ('create', 'n', 'America/Los_Angeles', 'Name')]
     assert roles.calls == ['n1']
+
+def test_update_timezone(monkeypatch):
+    repo = DummyRepo()
+    monkeypatch.setattr('src.users.user_service.get_user_repository', lambda: repo)
+    monkeypatch.setattr('src.users.user_service.get_user_role_service', lambda: DummyRoleService())
+    service = UserService()
+    result = service.update_timezone('u1', 'UTC')
+    assert result is True
+    assert repo.calls[-1] == ('update_tz', 'u1', 'UTC')
