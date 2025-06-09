@@ -13,6 +13,7 @@ from src.tasks.task_service import get_task_service
 from src.ai.prompt_repository import get_prompt_repository
 from src.eval.debug_data import get_eval_inputs, get_eval_results
 from src.ui.run_tests import render_run_tests
+from src.database.firestore import get_client
 logger = logging.getLogger(__name__)
 
 class Page(str, Enum):
@@ -142,9 +143,16 @@ def _delete_ai_chats_tab():
     if st.button('Delete AI Chats one-by-one') and confirm:
         delete_all_chats_one_by_one(delete_count)
 
+def _debug_user_tables_tab():
+    client = get_client()
+    users_df = pd.DataFrame(client.get_all('users'))
+    st.dataframe(users_df)
+    roles_df = pd.DataFrame(client.get_all('user_roles'))
+    st.dataframe(roles_df)
+
 def debug_page():
     st.header('Debug Information')
-    tabs = st.tabs(['Session State', 'AI Chats', 'Tasks', 'Prompts', 'AI Eval Inputs', 'AI Eval Results', 'Delete AI Chats'])
+    tabs = st.tabs(['Session State', 'AI Chats', 'Tasks', 'Prompts', 'AI Eval Inputs', 'AI Eval Results', 'Users and Roles', 'Delete AI Chats'])
     with tabs[0]:
         _debug_session_state_tab()
     with tabs[1]:
@@ -158,6 +166,8 @@ def debug_page():
     with tabs[5]:
         _debug_eval_results_tab()
     with tabs[6]:
+        _debug_user_tables_tab()
+    with tabs[7]:
         _delete_ai_chats_tab()
 
 def render_main_page():
