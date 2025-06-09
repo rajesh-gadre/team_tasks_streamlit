@@ -1,18 +1,21 @@
 import logging
 from typing import Dict
 from .user_repository import get_user_repository
+from .user_role_service import get_user_role_service
 
 logger = logging.getLogger(__name__)
 
 class UserService:
     def __init__(self):
         self.repo = get_user_repository()
+        self.role_service = get_user_role_service()
 
-    def login(self, email: str) -> Dict[str, str]:
+    def login(self, email: str, name: str | None=None) -> Dict[str, str]:
         record = self.repo.get_by_email(email)
-        if record:
-            return record
-        return self.repo.create_user(email, 'America/Los_Angeles')
+        if not record:
+            record = self.repo.create_user(email, 'America/Los_Angeles', name)
+        self.role_service.ensure_default_role(record['userId'])
+        return record
 
 _service: UserService | None = None
 

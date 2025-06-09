@@ -13,10 +13,16 @@ class UserRepository:
         records = self.db.query(self.collection, filters=[('userEmail', '==', email)], limit=1)
         return records[0] if records else None
 
-    def create_user(self, email: str, tz: str) -> Dict[str, str]:
-        doc_id = self.db.create(self.collection, {'userEmail': email, 'userTZ': tz})
+    def create_user(self, email: str, tz: str, name: str | None=None) -> Dict[str, str]:
+        data = {'userEmail': email, 'userTZ': tz}
+        if name:
+            data['userName'] = name
+        doc_id = self.db.create(self.collection, data)
         self.db.update(self.collection, doc_id, {'userId': doc_id})
-        return {'userId': doc_id, 'userEmail': email, 'userTZ': tz}
+        record = {'userId': doc_id, 'userEmail': email, 'userTZ': tz}
+        if name:
+            record['userName'] = name
+        return record
 
 _repo: Optional[UserRepository] = None
 
