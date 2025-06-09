@@ -133,7 +133,7 @@ LOG_LEVEL=INFO  # DEBUG, INFO, WARNING, ERROR, CRITICAL
 
 ### 6.1 Create AI_prompts Collection
 
-Create a document in the `AI_prompts` collection with the following fields:
+### 6.2 Create a document in the `AI_prompts` collection with the following fields:
 - `prompt_name`: "AI_Tasks"
 - `text`: Your system prompt for the AI assistant
 - `status`: "active"
