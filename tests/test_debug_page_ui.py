@@ -54,6 +54,7 @@ def test_debug_page_tabs_and_delete(monkeypatch):
     monkeypatch.setattr('src.ui.navigation.get_prompt_repository', lambda: SimpleNamespace(get_all_prompts=lambda: []))
     monkeypatch.setattr('src.ui.navigation.get_eval_inputs', lambda: [])
     monkeypatch.setattr('src.ui.navigation.get_eval_results', lambda: [])
+    monkeypatch.setattr('src.ui.navigation.get_client', lambda: SimpleNamespace(get_all=lambda c: []))
     delete_calls = []
     monkeypatch.setattr('src.ui.navigation.delete_all_chats_one_by_one', lambda count: delete_calls.append(count))
     monkeypatch.setattr(st, 'button', lambda *a, **k: True)
