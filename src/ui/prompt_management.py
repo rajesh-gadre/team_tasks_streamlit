@@ -1,6 +1,8 @@
 import streamlit as st
+
 from src.ai.prompt_service import get_prompt_service
 from src.database.models import PromptStatus
+from src.utils.time_utils import format_user_tz
 
 def render_prompt_management():
     st.header('Prompt Management')
@@ -38,7 +40,7 @@ def render_prompt_management():
                 st.error(f'Failed to create new version: {e}')
     with st.form(key='change_active_version'):
         st.subheader('Change Active version')
-        options = {f"v{p.version} - {(p.created_at.strftime('%Y-%m-%d %H:%M:%S') if p.created_at else 'unknown')}": p.version for p in selected}
+        options = {f"v{p.version} - {(format_user_tz(p.created_at, '%Y-%m-%d %H:%M:%S') if p.created_at else 'unknown')}": p.version for p in selected}
         current_version = active_prompt.version if active_prompt else None
         version_choice = st.selectbox('Select Version', list(options.keys()), index=list(options.values()).index(current_version) if current_version in options.values() else 0)
         update = st.form_submit_button('Update')

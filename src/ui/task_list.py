@@ -1,8 +1,11 @@
-import streamlit as st
 from datetime import datetime
-from typing import List, Callable
+from typing import Callable, List
+
+import streamlit as st
+
 from src.database.models import Task, TaskStatus
 from src.tasks.task_service import get_task_service
+from src.utils.time_utils import format_user_tz
 
 def render_task_list(tasks: List[Task], status: str, on_refresh: Callable=None):
     if not tasks:
@@ -36,21 +39,13 @@ def render_task_list(tasks: List[Task], status: str, on_refresh: Callable=None):
             if status == TaskStatus.ACTIVE:
                 row = st.columns([3, 1, 2, 1])
                 row[0].write(task.title)
-                if task.due_date:
-                    due_date_str = task.due_date.strftime('%Y-%m-%d') if isinstance(task.due_date, datetime) else task.due_date
-                    row[1].write(due_date_str)
-                else:
-                    row[1].write('N/A')
+                row[1].write(format_user_tz(task.due_date, '%Y-%m-%d') if task.due_date else 'N/A')
                 action_col = row[2]
                 details_col = row[3]
             else:
                 row = st.columns([3, 2, 2, 1])
                 row[0].write(task.title)
-                if task.due_date:
-                    due_date_str = task.due_date.strftime('%Y-%m-%d') if isinstance(task.due_date, datetime) else task.due_date
-                    row[1].write(due_date_str)
-                else:
-                    row[1].write('N/A')
+                row[1].write(format_user_tz(task.due_date, '%Y-%m-%d') if task.due_date else 'N/A')
                 action_col = row[2]
                 details_col = row[3]
             if status == TaskStatus.ACTIVE:
@@ -106,8 +101,8 @@ def render_task_list(tasks: List[Task], status: str, on_refresh: Callable=None):
                         st.subheader('Task History')
                         for update in sorted(task.updates, key=lambda x: x.get('timestamp', datetime.min), reverse=True):
                             timestamp = update.get('timestamp')
-                            timestamp_str = timestamp.strftime('%Y-%m-%d %H:%M') if isinstance(timestamp, datetime) else str(timestamp)
-                            st.text(f"{timestamp_str}: {update.get('updateText', 'Updated')}")
+                            ts = format_user_tz(timestamp)
+                            st.text(f"{ts}: {update.get('updateText', 'Updated')}")
             st.markdown("<hr class='task-separator'>", unsafe_allow_html=True)
 
 def render_active_tasks():
