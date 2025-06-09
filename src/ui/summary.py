@@ -1,9 +1,12 @@
 import os
 from datetime import datetime, timedelta
+
 import streamlit as st
 from langchain_community.chat_models import ChatOpenAI
 from langchain_core.messages import HumanMessage, SystemMessage
+
 from src.tasks.task_service import get_task_service
+from src.utils.time_utils import format_user_tz
 
 def render_summary():
     st.header('Weekly Summary')
@@ -36,7 +39,7 @@ def render_summary():
     else:
         st.write('Here are the latest updates:')
         for ts, title, text in recent_updates[:5]:
-            st.markdown(f"- **{ts.strftime('%Y-%m-%d')}**: {text} - *{title}*")
+            st.markdown(f"- **{format_user_tz(ts, '%Y-%m-%d')}**: {text} - *{title}*")
 
 def _summarize_updates(updates):
     api_key = os.environ.get('OPENAI_API_KEY')
@@ -44,7 +47,7 @@ def _summarize_updates(updates):
         return None
     try:
         chat = ChatOpenAI(api_key=api_key, model=os.environ.get('OPENAI_MODEL', 'gpt-4.1-mini'), temperature=0)
-        updates_text = '\n'.join((f"- {ts.strftime('%Y-%m-%d')}: {text} ({title})" for ts, title, text in updates))
+        updates_text = '\n'.join((f"- {format_user_tz(ts, '%Y-%m-%d')}: {text} ({title})" for ts, title, text in updates))
         prompt = f'Summarize the following task updates in 3-5 bullet points:\n{updates_text}'
         messages = [SystemMessage(content='You are a helpful assistant that summarizes task updates.'), HumanMessage(content=prompt)]
         response = chat.invoke(messages)
