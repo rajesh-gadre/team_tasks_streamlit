@@ -3,7 +3,10 @@ import json
 import logging
 from datetime import datetime
 from typing import Dict, List, Optional, Any, Union
-from google.cloud.firestore_v1 import FieldFilter
+try:
+    from google.cloud.firestore_v1 import FieldFilter
+except ModuleNotFoundError as e:
+    raise ModuleNotFoundError('google-cloud-firestore is not installed') from e
 import firebase_admin
 from firebase_admin import credentials, firestore
 from firebase_admin.firestore import SERVER_TIMESTAMP

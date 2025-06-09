@@ -8,6 +8,7 @@ langchain-openai
 langchain_community
 openai
 python-dotenv
+google-cloud-firestore
 pytest
 PyJWT>=2.0
 git+https://github.com/amit-sw/aiclub_google_auth.git
