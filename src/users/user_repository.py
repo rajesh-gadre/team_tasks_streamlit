@@ -24,6 +24,9 @@ class UserRepository:
             record['userName'] = name
         return record
 
+    def get_users(self):
+        return self.db.get_all(self.collection)
+
 _repo: Optional[UserRepository] = None
 
 def get_user_repository() -> UserRepository:

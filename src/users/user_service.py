@@ -17,6 +17,9 @@ class UserService:
         self.role_service.ensure_default_role(record['userId'])
         return record
 
+    def get_users(self):
+        return self.repo.get_users()
+
 _service: UserService | None = None
 
 def get_user_service() -> UserService:
