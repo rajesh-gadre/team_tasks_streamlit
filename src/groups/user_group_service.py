@@ -23,6 +23,10 @@ class UserGroupService:
     def delete_user_group(self, doc_id: str) -> bool:
         return self.repo.delete_user_group(doc_id)
 
+    def get_groups_for_user(self, user_id: str) -> List[Dict[str, Any]]:
+        records = self.repo.get_user_groups()
+        return [r for r in records if (r.get('userId') == user_id or r.get('userEmail') == user_id) and r.get('status') != 'deleted']
+
 _service: UserGroupService | None = None
 
 def get_user_group_service() -> UserGroupService:

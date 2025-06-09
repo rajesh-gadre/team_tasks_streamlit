@@ -7,6 +7,7 @@ from src.ui.task_form import render_task_form
 from src.ui.ai_chat import render_ai_chat
 from src.ui.prompt_management import render_prompt_management
 from src.ui.group_management import render_group_management
+from src.ui.settings import render_settings
 from src.ui.summary import render_summary
 from src.ui.changelog import render_changelog
 from src.ai.chat_service import delete_all_chats_one_by_one, get_all_chats
@@ -79,6 +80,9 @@ def prompt_management_page():
 
 def group_management_page():
     render_group_management()
+
+def settings_page():
+    render_settings()
 
 def summary_page():
     render_summary()
@@ -181,6 +185,7 @@ def render_main_page():
     ai_page = st.Page(ai_assistant_page, title='AI Assistant', icon='🤖')
     prompt_page = st.Page(prompt_management_page, title='Prompt Management', icon='📝')
     group_page = st.Page(group_management_page, title='Group Management', icon='👥')
+    settings_nav = st.Page(settings_page, title='Settings', icon='⚙️')
     summary_nav = st.Page(summary_page, title='Summary', icon='📋')
     changelog_nav = st.Page(changelog_page, title='ChangeLog', icon='📜')
     run_tests_nav = st.Page(run_tests_page, title='Run Tests', icon='🧪')
@@ -190,7 +195,7 @@ def render_main_page():
 
     ai_pages = [ai_page]
     user_pages = [active_page, completed_page, deleted_page]
-    navigation_pages = [summary_nav, changelog_nav, run_tests_nav]
+    navigation_pages = [settings_nav, summary_nav, changelog_nav, run_tests_nav]
     admin_pages = [prompt_page, group_page, eval_candidates_nav, run_evals_nav, debug_page_nav]
     page = st.navigation({'============= 🧑\u200d💼 AI': ai_pages,'============= 🧑\u200d💼 User': user_pages, '============= 🧭 Nav': navigation_pages, '============= 🛠️ Admin': admin_pages})
     page.run()

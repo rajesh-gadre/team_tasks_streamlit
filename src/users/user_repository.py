@@ -24,6 +24,9 @@ class UserRepository:
             record['userName'] = name
         return record
 
+    def update_user_timezone(self, user_id: str, tz: str) -> bool:
+        return self.db.update(self.collection, user_id, {'userTZ': tz})
+
     def get_users(self):
         return self.db.get_all(self.collection)
 

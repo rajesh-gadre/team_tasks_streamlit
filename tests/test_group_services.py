@@ -47,6 +47,8 @@ class DummyUserGroupRepo:
         return True
 
 
+
+
 def test_group_service(monkeypatch):
     repo = DummyRepo()
     monkeypatch.setattr('src.groups.group_service.get_group_repository', lambda: repo)
@@ -66,3 +68,12 @@ def test_user_group_service(monkeypatch):
     service.update_user_group('u', {'b': 2})
     service.delete_user_group('u')
     assert repo.calls == ['get', ('create', {'a': 1}), ('update', 'u', {'b': 2}), ('delete', 'u')]
+
+def test_get_groups_for_user(monkeypatch):
+    record = {'userId': 'u1', 'groupName': 'G', 'status': 'active'}
+    repo = DummyUserGroupRepo()
+    repo.get_user_groups = lambda: [record]
+    monkeypatch.setattr('src.groups.user_group_service.get_user_group_repository', lambda: repo)
+    service = UserGroupService()
+    groups = service.get_groups_for_user('u1')
+    assert groups == [record]
