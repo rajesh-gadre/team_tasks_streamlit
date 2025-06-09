@@ -2,8 +2,7 @@ import streamlit as st
 from enum import Enum
 import logging
 import pandas as pd
-from src.ui.task_list import render_active_tasks, render_completed_tasks, render_deleted_tasks
-from src.ui.task_form import render_task_form
+from src.ui.tasks_page import render_tasks_page
 from src.ui.ai_chat import render_ai_chat
 from src.ui.prompt_management import render_prompt_management
 from src.ui.group_management import render_group_management
@@ -19,9 +18,7 @@ from src.database.firestore import get_client
 logger = logging.getLogger(__name__)
 
 class Page(str, Enum):
-    ACTIVE = 'Active Tasks'
-    COMPLETED = 'Completed Tasks'
-    DELETED = 'Deleted Tasks'
+    TASKS = 'Tasks'
     AI = 'AI Assistant'
     LOGIN = 'Login'
 
@@ -29,7 +26,7 @@ def set_page(page: Page):
     st.session_state.current_page = page
 
 def get_current_page() -> Page:
-    return st.session_state.get('current_page', Page.ACTIVE)
+    return st.session_state.get('current_page', Page.TASKS)
 
 def render_login_page(auth, AUTH_TYPE):
     st.title('Welcome to TASK MANAGEMENT SYSTEM')
@@ -58,19 +55,7 @@ def render_sidebar():
                 st.session_state.current_page = Page.LOGIN
                 st.rerun()
 
-def active_tasks_page():
-    if st.session_state.get('adding_task'):
-        render_task_form()
-    elif st.session_state.get('editing_task'):
-        render_task_form(st.session_state.editing_task)
-    else:
-        render_active_tasks()
 
-def completed_tasks_page():
-    render_completed_tasks()
-
-def deleted_tasks_page():
-    render_deleted_tasks()
 
 def ai_assistant_page():
     render_ai_chat()
@@ -100,6 +85,9 @@ def run_evals_page():
 
 def run_tests_page():
     render_run_tests()
+
+def tasks_page():
+    render_tasks_page()
 
 def debug_session_state():
     session_items = {}
@@ -179,9 +167,7 @@ def debug_page():
         _delete_ai_chats_tab()
 
 def render_main_page():
-    active_page = st.Page(active_tasks_page, title='Active Tasks', icon='✅', default=True)
-    completed_page = st.Page(completed_tasks_page, title='Completed Tasks', icon='✨')
-    deleted_page = st.Page(deleted_tasks_page, title='Deleted Tasks', icon='🗑️')
+    tasks_nav = st.Page(tasks_page, title='Tasks', icon='✅', default=True)
     ai_page = st.Page(ai_assistant_page, title='AI Assistant', icon='🤖')
     prompt_page = st.Page(prompt_management_page, title='Prompt Management', icon='📝')
     group_page = st.Page(group_management_page, title='Group Management', icon='👥')
@@ -194,7 +180,7 @@ def render_main_page():
     debug_page_nav = st.Page(debug_page, title='Debug', icon='🐞')
 
     ai_pages = [ai_page]
-    user_pages = [active_page, completed_page, deleted_page]
+    user_pages = [tasks_nav]
     navigation_pages = [settings_nav, summary_nav, changelog_nav, run_tests_nav]
     admin_pages = [prompt_page, group_page, eval_candidates_nav, run_evals_nav, debug_page_nav]
     page = st.navigation({'============= 🧑\u200d💼 AI': ai_pages,'============= 🧑\u200d💼 User': user_pages, '============= 🧭 Nav': navigation_pages, '============= 🛠️ Admin': admin_pages})
