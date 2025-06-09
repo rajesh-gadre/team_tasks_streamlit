@@ -1,6 +1,7 @@
 import streamlit as st
 from src.groups.group_service import get_group_service
 from src.groups.user_group_service import get_user_group_service
+from src.users.user_service import get_user_service
 
 
 def _groups_tab():
@@ -31,31 +32,53 @@ def _groups_tab():
 
 def _user_groups_tab():
     service = get_user_group_service()
+    group_service = get_group_service()
+    user_service = get_user_service()
     records = service.get_user_groups()
+    groups = group_service.get_groups()
+    users = user_service.get_users()
     st.dataframe(records)
-    action = st.radio('Action', ['Add new record', 'Modify existing record'])
-    if action == 'Add new record':
-        group_name = st.text_input('Group Name', key='add_group_name')
-        user_email = st.text_input('User Email', key='add_user_email')
-        if st.button('Add'):
-            data = {'groupName': group_name, 'userEmail': user_email, 'status': 'active'}
-            service.create_user_group(data)
-            st.success('Saved')
-            st.rerun()
-    else:
-        options = [''] + [r['id'] for r in records]
-        record_id = st.selectbox('RecordId', options)
-        record = next((r for r in records if r['id'] == record_id), {}) if record_id else {}
-        group_name = st.text_input('Group Name', value=record.get('groupName', ''), key='modify_group_name')
-        user_email = st.text_input('User Email', value=record.get('userEmail', ''), key='modify_user_email')
-        cols = st.columns(2)
-        if cols[0].button('Update') and record_id:
-            data = {'groupName': group_name, 'userEmail': user_email}
-            service.update_user_group(record_id, data)
-            st.success('Saved')
-            st.rerun()
-        if cols[1].button('Delete') and record_id:
-            service.delete_user_group(record_id)
+
+    st.subheader('Add User to Group')
+    group_options = [''] + [g['groupName'] for g in groups]
+    add_group = st.selectbox('Group', group_options, key='add_group')
+    user_options = [''] + [u.get('userName') or u['userEmail'] for u in users]
+    add_user_label = st.selectbox('User', user_options, key='add_user')
+    if st.button('Add User to Group'):
+        group = next((g for g in groups if g['groupName'] == add_group), None)
+        user = next((u for u in users if (u.get('userName') or u['userEmail']) == add_user_label), None)
+        if group and user:
+            exists = any(
+                ((r.get('groupId') == group.get('id') or r.get('groupName') == group['groupName']) and
+                 (r.get('userId') == user.get('userId') or r.get('userEmail') == user['userEmail']) and
+                 r.get('status') != 'deleted')
+                for r in records
+            )
+            if not exists:
+                data = {
+                    'groupId': group.get('id'),
+                    'groupName': group.get('groupName'),
+                    'userId': user.get('userId'),
+                    'userEmail': user['userEmail'],
+                    'status': 'active',
+                }
+                if 'userName' in user:
+                    data['userName'] = user['userName']
+                service.create_user_group(data)
+                st.success('Saved')
+                st.rerun()
+
+    st.divider()
+    st.subheader('Remove User from Group')
+    remove_group_name = st.selectbox('Group', group_options, key='remove_group')
+    group = next((g for g in groups if g['groupName'] == remove_group_name), None)
+    if group:
+        group_records = [r for r in records if (r.get('groupId') == group.get('id') or r.get('groupName') == group['groupName']) and r.get('status') != 'deleted']
+        user_opts = [''] + [r.get('userEmail') for r in group_records]
+        remove_user_email = st.selectbox('User', user_opts, key='remove_user')
+        record = next((r for r in group_records if r.get('userEmail') == remove_user_email), None)
+        if record and st.button('Delete?'):
+            service.delete_user_group(record['id'])
             st.success('Deleted')
             st.rerun()
 

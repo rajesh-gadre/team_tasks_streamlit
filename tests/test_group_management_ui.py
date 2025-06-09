@@ -19,25 +19,28 @@ tabs_called = []
 def tabs(names):
     tabs_called.append(names)
     return [Tab() for _ in names]
+
 st.tabs = tabs
 st.header = lambda *a, **k: None
 st.dataframe = lambda *a, **k: None
-st.form = lambda *a, **k: SimpleNamespace(__enter__=lambda self: None, __exit__=lambda self, exc_type, exc, tb: None)
-st.selectbox = lambda *a, **k: ''
+st.subheader = lambda *a, **k: None
+st.divider = lambda *a, **k: None
 st.text_input = lambda *a, **k: ''
-st.form_submit_button = lambda *a, **k: False
+st.selectbox = lambda *a, **k: ''
+st.button = lambda *a, **k: False
 st.success = lambda *a, **k: None
 st.rerun = lambda: None
-st.radio = lambda *a, **k: ''
-st.columns = lambda n: [SimpleNamespace(button=lambda *a, **k: False) for _ in range(n)]
 sys.modules['streamlit'] = st
+
 import importlib
 import src.ui.group_management as gm
 importlib.reload(gm)
 
+
 def test_render_group_management_tabs(monkeypatch):
     monkeypatch.setattr(gm, 'get_group_service', lambda: SimpleNamespace(get_groups=lambda: []))
     monkeypatch.setattr(gm, 'get_user_group_service', lambda: SimpleNamespace(get_user_groups=lambda: []))
+    monkeypatch.setattr(gm, 'get_user_service', lambda: SimpleNamespace(get_users=lambda: []))
     tabs_called.clear()
     gm.render_group_management()
     assert tabs_called and tabs_called[0] == ['Groups', 'UserGroups']
@@ -45,28 +48,36 @@ def test_render_group_management_tabs(monkeypatch):
 
 def test_user_groups_add(monkeypatch):
     calls = {}
-    service = SimpleNamespace(get_user_groups=lambda: [], create_user_group=lambda data: calls.setdefault('create', data))
-    monkeypatch.setattr(gm, 'get_user_group_service', lambda: service)
-    st.radio = lambda *a, **k: 'Add new record'
-    st.button = lambda label: label == 'Add'
-    st.text_input = lambda *a, **k: 'v'
+    ug_service = SimpleNamespace(get_user_groups=lambda: [], create_user_group=lambda d: calls.setdefault('create', d))
+    group_service = SimpleNamespace(get_groups=lambda: [{'id': 'g1', 'groupName': 'G'}])
+    user_service = SimpleNamespace(get_users=lambda: [{'userId': 'u1', 'userEmail': 'E'}])
+    monkeypatch.setattr(gm, 'get_user_group_service', lambda: ug_service)
+    monkeypatch.setattr(gm, 'get_group_service', lambda: group_service)
+    monkeypatch.setattr(gm, 'get_user_service', lambda: user_service)
+    values = ['G', 'E', '']
+    st.selectbox = lambda *a, **k: values.pop(0)
+    st.button = lambda label: label == 'Add User to Group'
     gm._user_groups_tab()
-    assert calls['create'] == {'groupName': 'v', 'userEmail': 'v', 'status': 'active'}
+    assert calls['create'] == {
+        'groupId': 'g1',
+        'groupName': 'G',
+        'userId': 'u1',
+        'userEmail': 'E',
+        'status': 'active'
+    }
 
 
 def test_user_groups_delete(monkeypatch):
-    record = {'id': '1', 'groupName': 'a', 'userEmail': 'e'}
+    record = {'id': '1', 'groupId': 'g1', 'groupName': 'G', 'userId': 'u1', 'userEmail': 'E'}
     calls = []
-    service = SimpleNamespace(get_user_groups=lambda: [record], update_user_group=lambda *a, **k: None, delete_user_group=lambda rid: calls.append(('delete', rid)))
-    monkeypatch.setattr(gm, 'get_user_group_service', lambda: service)
-    st.radio = lambda *a, **k: 'Modify existing record'
-    st.selectbox = lambda *a, **k: '1'
-    st.text_input = lambda label, value='': value
-    class Col:
-        def __init__(self, flag):
-            self.flag = flag
-        def button(self, label):
-            return label == 'Delete' and self.flag
-    st.columns = lambda n: [Col(False), Col(True)]
+    ug_service = SimpleNamespace(get_user_groups=lambda: [record], delete_user_group=lambda rid: calls.append(('delete', rid)))
+    group_service = SimpleNamespace(get_groups=lambda: [{'id': 'g1', 'groupName': 'G'}])
+    user_service = SimpleNamespace(get_users=lambda: [{'userId': 'u1', 'userEmail': 'E'}])
+    monkeypatch.setattr(gm, 'get_user_group_service', lambda: ug_service)
+    monkeypatch.setattr(gm, 'get_group_service', lambda: group_service)
+    monkeypatch.setattr(gm, 'get_user_service', lambda: user_service)
+    values = ['', '', 'G', 'E']
+    st.selectbox = lambda *a, **k: values.pop(0)
+    st.button = lambda label: label == 'Delete?'
     gm._user_groups_tab()
     assert calls == [('delete', '1')]
