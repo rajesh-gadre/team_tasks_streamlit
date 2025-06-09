@@ -6,8 +6,6 @@ from src.ui.navigation import render_main_page, render_sidebar
 from src.auth.session import init_session, login_user, logout_user as session_logout_user
 
 load_dotenv()
-for key, value in st.secrets.items():
-    os.environ[str(key)] = str(value)
 
 AUTH_TYPE = os.environ.get('AUTH_TYPE', 'google').lower()
 logging_level = os.environ.get('LOG_LEVEL', 'INFO')
