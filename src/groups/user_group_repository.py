@@ -10,13 +10,20 @@ class UserGroupRepository:
         self.db = get_client()
 
     def get_user_groups(self) -> List[Dict[str, Any]]:
-        return self.db.query(self.collection, order_by='createdAt', direction='DESCENDING')
+        filters = [('status', '!=', 'deleted')]
+        return self.db.query(self.collection, filters=filters, order_by='createdAt', direction='DESCENDING')
 
     def create_user_group(self, data: Dict[str, Any]) -> str:
         return self.db.create(self.collection, data)
 
     def update_user_group(self, doc_id: str, data: Dict[str, Any]) -> bool:
         return self.db.update(self.collection, doc_id, data)
+
+    def get_user_group(self, doc_id: str) -> Dict[str, Any] | None:
+        return self.db.read(self.collection, doc_id)
+
+    def delete_user_group(self, doc_id: str) -> bool:
+        return self.db.update(self.collection, doc_id, {'status': 'deleted'})
 
 _repo: UserGroupRepository | None = None
 

@@ -28,6 +28,8 @@ st.text_input = lambda *a, **k: ''
 st.form_submit_button = lambda *a, **k: False
 st.success = lambda *a, **k: None
 st.rerun = lambda: None
+st.radio = lambda *a, **k: ''
+st.columns = lambda n: [SimpleNamespace(button=lambda *a, **k: False) for _ in range(n)]
 sys.modules['streamlit'] = st
 import importlib
 import src.ui.group_management as gm
@@ -39,3 +41,32 @@ def test_render_group_management_tabs(monkeypatch):
     tabs_called.clear()
     gm.render_group_management()
     assert tabs_called and tabs_called[0] == ['Groups', 'UserGroups']
+
+
+def test_user_groups_add(monkeypatch):
+    calls = {}
+    service = SimpleNamespace(get_user_groups=lambda: [], create_user_group=lambda data: calls.setdefault('create', data))
+    monkeypatch.setattr(gm, 'get_user_group_service', lambda: service)
+    st.radio = lambda *a, **k: 'Add new record'
+    st.button = lambda label: label == 'Add'
+    st.text_input = lambda *a, **k: 'v'
+    gm._user_groups_tab()
+    assert calls['create'] == {'groupName': 'v', 'userEmail': 'v', 'status': 'active'}
+
+
+def test_user_groups_delete(monkeypatch):
+    record = {'id': '1', 'groupName': 'a', 'userEmail': 'e'}
+    calls = []
+    service = SimpleNamespace(get_user_groups=lambda: [record], update_user_group=lambda *a, **k: None, delete_user_group=lambda rid: calls.append(('delete', rid)))
+    monkeypatch.setattr(gm, 'get_user_group_service', lambda: service)
+    st.radio = lambda *a, **k: 'Modify existing record'
+    st.selectbox = lambda *a, **k: '1'
+    st.text_input = lambda label, value='': value
+    class Col:
+        def __init__(self, flag):
+            self.flag = flag
+        def button(self, label):
+            return label == 'Delete' and self.flag
+    st.columns = lambda n: [Col(False), Col(True)]
+    gm._user_groups_tab()
+    assert calls == [('delete', '1')]
