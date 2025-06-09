@@ -23,21 +23,31 @@ def _user_groups_tab():
     service = get_user_group_service()
     records = service.get_user_groups()
     st.dataframe(records)
-    options = [''] + [r['id'] for r in records]
-    record_id = st.selectbox('Record', options)
-    group_id = st.text_input('GroupId')
-    group_name = st.text_input('GroupName')
-    user_id = st.text_input('UserId')
-    user_name = st.text_input('UserName')
-    user_email = st.text_input('UserEmail')
-    if st.button('Save UserGroup'):
-        data = {'groupId': group_id, 'groupName': group_name, 'userId': user_id, 'userName': user_name, 'userEmail': user_email}
-        if record_id:
-            service.update_user_group(record_id, data)
-        else:
+    action = st.radio('Action', ['Add new record', 'Modify existing record'])
+    if action == 'Add new record':
+        group_name = st.text_input('Group Name')
+        user_email = st.text_input('User Email')
+        if st.button('Add'):
+            data = {'groupName': group_name, 'userEmail': user_email, 'status': 'active'}
             service.create_user_group(data)
-        st.success('Saved')
-        st.rerun()
+            st.success('Saved')
+            st.rerun()
+    else:
+        options = [''] + [r['id'] for r in records]
+        record_id = st.selectbox('RecordId', options)
+        record = next((r for r in records if r['id'] == record_id), {}) if record_id else {}
+        group_name = st.text_input('Group Name', value=record.get('groupName', ''))
+        user_email = st.text_input('User Email', value=record.get('userEmail', ''))
+        cols = st.columns(2)
+        if cols[0].button('Update') and record_id:
+            data = {'groupName': group_name, 'userEmail': user_email}
+            service.update_user_group(record_id, data)
+            st.success('Saved')
+            st.rerun()
+        if cols[1].button('Delete') and record_id:
+            service.delete_user_group(record_id)
+            st.success('Deleted')
+            st.rerun()
 
 
 def render_group_management():

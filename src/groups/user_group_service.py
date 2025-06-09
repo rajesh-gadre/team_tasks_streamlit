@@ -17,6 +17,12 @@ class UserGroupService:
     def update_user_group(self, doc_id: str, data: Dict[str, Any]) -> bool:
         return self.repo.update_user_group(doc_id, data)
 
+    def get_user_group(self, doc_id: str) -> Dict[str, Any] | None:
+        return self.repo.get_user_group(doc_id)
+
+    def delete_user_group(self, doc_id: str) -> bool:
+        return self.repo.delete_user_group(doc_id)
+
 _service: UserGroupService | None = None
 
 def get_user_group_service() -> UserGroupService:

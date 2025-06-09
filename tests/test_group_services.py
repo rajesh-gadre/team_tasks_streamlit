@@ -42,6 +42,10 @@ class DummyUserGroupRepo:
         self.calls.append(('update', uid, data))
         return True
 
+    def delete_user_group(self, uid):
+        self.calls.append(('delete', uid))
+        return True
+
 
 def test_group_service(monkeypatch):
     repo = DummyRepo()
@@ -60,4 +64,5 @@ def test_user_group_service(monkeypatch):
     service.get_user_groups()
     service.create_user_group({'a': 1})
     service.update_user_group('u', {'b': 2})
-    assert repo.calls == ['get', ('create', {'a': 1}), ('update', 'u', {'b': 2})]
+    service.delete_user_group('u')
+    assert repo.calls == ['get', ('create', {'a': 1}), ('update', 'u', {'b': 2}), ('delete', 'u')]
