@@ -187,8 +187,10 @@ def render_main_page():
     eval_candidates_nav = st.Page(eval_candidates_page, title='Eval Candidates', icon='🧪')
     run_evals_nav = st.Page(run_evals_page, title='Run Evals', icon='⚙️')
     debug_page_nav = st.Page(debug_page, title='Debug', icon='🐞')
-    user_pages = [ai_page, active_page, completed_page, deleted_page]
+
+    ai_pages = [ai_page]
+    user_pages = [active_page, completed_page, deleted_page]
     navigation_pages = [summary_nav, changelog_nav, run_tests_nav]
     admin_pages = [prompt_page, group_page, eval_candidates_nav, run_evals_nav, debug_page_nav]
-    page = st.navigation({'============= 🧑\u200d💼 User': user_pages, '============= 🧭 Nav': navigation_pages, '============= 🛠️ Admin': admin_pages})
+    page = st.navigation({'============= 🧑\u200d💼 AI': ai_pages,'============= 🧑\u200d💼 User': user_pages, '============= 🧭 Nav': navigation_pages, '============= 🛠️ Admin': admin_pages})
     page.run()
