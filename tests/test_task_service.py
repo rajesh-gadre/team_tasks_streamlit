@@ -43,3 +43,8 @@ def test_get_all_tasks_for_user(monkeypatch):
     result = service.get_all_tasks_for_user('u1')
     assert result == ['task1']
     repo.get_all_tasks_for_user.assert_called_once_with('u1')
+
+def test_assign_tasks(monkeypatch):
+    service, repo = _setup_service(monkeypatch)
+    service.assign_tasks(['t1', 't2'], 'u2')
+    repo.assign_tasks.assert_called_once_with(['t1', 't2'], 'u2')
