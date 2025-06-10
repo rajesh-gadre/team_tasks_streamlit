@@ -126,9 +126,17 @@ def _debug_user_tables_tab():
     roles_df = pd.DataFrame(client.get_all('user_roles'))
     st.dataframe(roles_df)
 
-def debug_page():
+def view_tables_page():
     st.header('Debug Information')
-    tabs = st.tabs(['Session State', 'AI Chats', 'Tasks', 'Prompts', 'AI Eval Inputs', 'AI Eval Results', 'Users and Roles', 'Delete AI Chats'])
+    tabs = st.tabs([
+        'Session State',
+        'AI Chats',
+        'Tasks',
+        'Prompts',
+        'AI Eval Inputs',
+        'AI Eval Results',
+        'Users and Roles',
+    ])
     with tabs[0]:
         _debug_session_state_tab()
     with tabs[1]:
@@ -143,7 +151,12 @@ def debug_page():
         _debug_eval_results_tab()
     with tabs[6]:
         _debug_user_tables_tab()
-    with tabs[7]:
+
+
+def danger_zone_page():
+    st.header('Danger Zone')
+    tabs = st.tabs(['Delete AI Chats'])
+    with tabs[0]:
         _delete_ai_chats_tab()
 
 def render_main_page():
@@ -152,11 +165,12 @@ def render_main_page():
     settings_nav = st.Page(settings_page, title='Settings', icon='⚙️')
     system_nav = st.Page(system_management_page, title='System Management', icon='🛠️')
     evals_nav = st.Page(evals_page, title='Evals', icon='🧪')
-    debug_page_nav = st.Page(debug_page, title='Debug', icon='🐞')
+    view_tables_nav = st.Page(view_tables_page, title='View Tables', icon='🐞')
+    danger_zone_nav = st.Page(danger_zone_page, title='Danger Zone', icon='🐞')
 
     ai_pages = [ai_page]
     user_pages = [tasks_nav]
     navigation_pages = [settings_nav]
-    admin_pages = [system_nav, evals_nav, debug_page_nav]
+    admin_pages = [system_nav, evals_nav, view_tables_nav, danger_zone_nav]
     page = st.navigation({'============= 🧑\u200d💼 AI': ai_pages,'============= 🧑\u200d💼 User': user_pages, '============= 🧭 Nav': navigation_pages, '============= 🛠️ Admin': admin_pages})
     page.run()

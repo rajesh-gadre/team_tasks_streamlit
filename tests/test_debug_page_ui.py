@@ -47,7 +47,7 @@ sys.modules['pandas'] = pd
 sys.modules.pop('src.ui.navigation', None)
 import src.ui.navigation as navigation
 
-def test_debug_page_tabs_and_delete(monkeypatch):
+def test_view_tables_page_tabs(monkeypatch):
     tabs_called.clear()
     expander_called.clear()
     monkeypatch.setattr('src.ui.navigation.get_all_chats', lambda: [])
@@ -56,14 +56,28 @@ def test_debug_page_tabs_and_delete(monkeypatch):
     monkeypatch.setattr('src.ui.navigation.get_eval_inputs', lambda: [])
     monkeypatch.setattr('src.ui.navigation.get_eval_results', lambda: [])
     monkeypatch.setattr('src.ui.navigation.get_client', lambda: SimpleNamespace(get_all=lambda c: []))
+    navigation.view_tables_page()
+    assert tabs_called and tabs_called[0] == [
+        'Session State',
+        'AI Chats',
+        'Tasks',
+        'Prompts',
+        'AI Eval Inputs',
+        'AI Eval Results',
+        'Users and Roles',
+    ]
+    assert not expander_called
+
+
+def test_danger_zone_delete(monkeypatch):
+    tabs_called.clear()
     delete_calls = []
     monkeypatch.setattr('src.ui.navigation.delete_all_chats_one_by_one', lambda count: delete_calls.append(count))
     monkeypatch.setattr(st, 'button', lambda *a, **k: True)
     st.checkbox = lambda *a, **k: True
-    navigation.debug_page()
-    assert tabs_called
-    assert not expander_called
+    navigation.danger_zone_page()
+    assert tabs_called and tabs_called[0] == ['Delete AI Chats']
     assert delete_calls == [1]
     st.checkbox = lambda *a, **k: False
-    navigation.debug_page()
+    navigation.danger_zone_page()
     assert delete_calls == [1]
