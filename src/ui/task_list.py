@@ -8,6 +8,11 @@ from src.tasks.task_service import get_task_service
 from src.utils.time_utils import format_user_tz
 
 def render_task_list(tasks: List[Task], status: str, on_refresh: Callable=None):
+    print(f"\n\n****{status=}\n\n")
+    for task in tasks:
+        print(f"task: {task.title=}, {task.id=}, {task.status=}")
+    print("***************************")
+
     if not tasks:
         st.info(f'No {status.lower()} tasks found.')
         return
@@ -35,7 +40,8 @@ def render_task_list(tasks: List[Task], status: str, on_refresh: Callable=None):
             header[2].write('**Actions**')
             header[3].write('**Details**')
         st.markdown("<hr class='task-separator'>", unsafe_allow_html=True)
-        for task in tasks:
+        for idx, task in enumerate(tasks):
+            print(f"In FOR LOOP. task: {task.title=}, {task.id=}, {task.status=}")
             if status == TaskStatus.ACTIVE:
                 row = st.columns([3, 1, 2, 1])
                 row[0].write(task.title)
@@ -50,17 +56,17 @@ def render_task_list(tasks: List[Task], status: str, on_refresh: Callable=None):
                 details_col = row[3]
             if status == TaskStatus.ACTIVE:
                 action_buttons = action_col.columns(3)
-                if action_buttons[0].button('✓', key=f'complete_{task.id}', help='Mark as completed'):
+                if action_buttons[0].button('✓', key=f'to_complete_{task.id}_{idx}', help='Mark as completed'):
                     if get_task_service().complete_task(user_id, task.id):
                         st.success('Task marked as completed!')
                         if on_refresh:
                             on_refresh()
                     else:
                         st.error('Failed to complete task.')
-                if action_buttons[1].button('✎', key=f'edit_{task.id}', help='Edit task'):
+                if action_buttons[1].button('✎', key=f'to_edit_{task.id}_{idx}', help='Edit task'):
                     st.session_state.editing_task = task
                     st.rerun()
-                if action_buttons[2].button('🗑', key=f'delete_{task.id}', help='Delete task'):
+                if action_buttons[2].button('🗑', key=f'to_delete_{task.id}_{idx}', help='Delete task'):
                     if get_task_service().delete_task(user_id, task.id):
                         st.success('Task deleted!')
                         if on_refresh:
@@ -68,7 +74,7 @@ def render_task_list(tasks: List[Task], status: str, on_refresh: Callable=None):
                     else:
                         st.error('Failed to delete task.')
             elif status == TaskStatus.COMPLETED:
-                if action_col.button('🗑', key=f'delete_{task.id}', help='Delete task'):
+                if action_col.button('🗑', key=f'to_delete_{task.id}_{idx}', help='Delete task'):
                     if get_task_service().delete_task(user_id, task.id):
                         st.success('Task deleted!')
                         if on_refresh:
@@ -76,14 +82,14 @@ def render_task_list(tasks: List[Task], status: str, on_refresh: Callable=None):
                     else:
                         st.error('Failed to delete task.')
             elif status == TaskStatus.DELETED:
-                if action_col.button('↩', key=f'restore_{task.id}', help='Restore task'):
+                if action_col.button('↩', key=f'to_restore_{task.id}_{idx}', help='Restore task'):
                     if get_task_service().restore_task(user_id, task.id):
                         st.success('Task restored!')
                         if on_refresh:
                             on_refresh()
                     else:
                         st.error('Failed to restore task.')
-            if details_col.button('👁', key=f'details_{task.id}', help='View details'):
+            if details_col.button('👁', key=f'details_{task.id}_{idx}', help='View details'):
                 if 'task_details' not in st.session_state:
                     st.session_state.task_details = {}
                 if task.id in st.session_state.task_details:
