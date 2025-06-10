@@ -6,6 +6,7 @@ import streamlit as st
 from src.database.models import Task, TaskStatus
 from src.tasks.task_service import get_task_service
 from src.utils.time_utils import format_user_tz
+from src.utils.sort_utils import sort_tasks
 
 def render_task_list(tasks: List[Task], status: str, on_refresh: Callable=None):
     print(f"\n\n****{status=}\n\n")
@@ -17,6 +18,15 @@ def render_task_list(tasks: List[Task], status: str, on_refresh: Callable=None):
         st.info(f'No {status.lower()} tasks found.')
         return
     user_id = st.session_state.user.get('email')
+    if status == TaskStatus.ACTIVE:
+        sort_opts = ['Title', 'Due Date']
+    elif status == TaskStatus.COMPLETED:
+        sort_opts = ['Title', 'Completed Date']
+    else:
+        sort_opts = ['Title', 'Deleted Date']
+    sort_by = st.selectbox('Sort by', sort_opts, key=f'sort_{status}')
+    descending = st.checkbox('Descending', key=f'desc_{status}', value=False)
+    tasks = sort_tasks(tasks, sort_by, descending)
     if status == TaskStatus.ACTIVE:
         cols = ['Title', 'Due Date', 'Actions', 'Details']
     elif status == TaskStatus.COMPLETED:
@@ -95,20 +105,13 @@ def render_task_list(tasks: List[Task], status: str, on_refresh: Callable=None):
                 if task.id in st.session_state.task_details:
                     del st.session_state.task_details[task.id]
                 else:
-                    st.session_state.task_details[task.id] = True
+                    detail = get_task_service().get_task(task.user_id, task.id)
+                    st.session_state.task_details[task.id] = detail
                 st.rerun()
             if 'task_details' in st.session_state and task.id in st.session_state.task_details:
                 with st.expander('Task Details', expanded=True):
-                    if task.description:
-                        st.markdown(f'**Description:** {task.description}')
-                    if task.notes:
-                        st.markdown(f'**Notes:** {task.notes}')
-                    if task.updates and len(task.updates) > 0:
-                        st.subheader('Task History')
-                        for update in sorted(task.updates, key=lambda x: x.get('timestamp', datetime.min), reverse=True):
-                            timestamp = update.get('timestamp')
-                            ts = format_user_tz(timestamp)
-                            st.text(f"{ts}: {update.get('updateText', 'Updated')}")
+                    detail = st.session_state.task_details.get(task.id)
+                    st.json({k: str(v) for k, v in vars(detail).items()})
             st.markdown("<hr class='task-separator'>", unsafe_allow_html=True)
 
 def render_active_tasks():
