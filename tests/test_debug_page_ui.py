@@ -5,6 +5,7 @@ root = Path(__file__).resolve().parents[1]
 sys.path.append(str(root))
 sys.path.append(str(root / 'src'))
 st = ModuleType('streamlit')
+st.write = lambda *a, **k: None
 st.session_state = {}
 expander_called = []
 

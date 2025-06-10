@@ -6,6 +6,7 @@ root = Path(__file__).resolve().parents[1]
 sys.path.append(str(root))
 
 st = ModuleType('streamlit')
+st.write = lambda *a, **k: None
 nav = ModuleType('src.ui.navigation')
 nav.render_main_page = lambda: None
 nav.render_sidebar = lambda: None

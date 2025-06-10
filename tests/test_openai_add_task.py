@@ -7,6 +7,7 @@ root_dir = Path(__file__).resolve().parents[1]
 sys.path.append(str(root_dir))
 sys.path.append(str(root_dir / 'src'))
 sys.modules.setdefault('streamlit', ModuleType('streamlit'))
+sys.modules['streamlit'].write = lambda *a, **k: None
 sys.modules['streamlit'].session_state = {}
 lc_core = ModuleType('langchain_core')
 lc_core.pydantic_v1 = ModuleType('pydantic_v1')

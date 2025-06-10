@@ -17,6 +17,7 @@ from ai.llm_models import NewTask, ModifiedTask, TaskChanges
 def create_service(monkeypatch):
     os.environ.setdefault('OPENAI_API_KEY', 'k')
     monkeypatch.setattr('ai.llm_service.get_client', lambda: SimpleNamespace())
+    monkeypatch.setattr('ai.llm_executor.LangChainTracer', lambda: SimpleNamespace())
     return LlmService()
 
 
@@ -35,6 +36,7 @@ def test_second_call_raises(monkeypatch):
             err.response = SimpleNamespace(status_code=500, headers={'h': 'v'}, json=lambda: {'e': 'x'}, text='t')
             raise err
     monkeypatch.setattr('ai.llm_executor.ChatOpenAI', DummyChat)
+    monkeypatch.setattr('ai.llm_executor.LangChainTracer', lambda: SimpleNamespace())
     executor = LlmExecutor(SimpleNamespace(api_key='k', model='m'))
     with pytest.raises(DummyChatError):
         executor._second_call('content')
@@ -75,5 +77,5 @@ def test_third_call_handles_exception(monkeypatch):
     monkeypatch.setattr('ai.llm_executor.get_task_service', lambda: TS())
     executor = LlmExecutor(SimpleNamespace())
     changes = TaskChanges(new_tasks=[NewTask(title='x')], modified_tasks=[ModifiedTask(id='m', title='y')])
-    res = executor._LlmExecutor__third_call('u1', changes)
+    res = executor._third_call('u1', changes)
     assert res is None

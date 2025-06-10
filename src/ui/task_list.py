@@ -121,6 +121,7 @@ def render_active_tasks():
         st.rerun()
     user_id = st.session_state.user.get('email')
     tasks = get_task_service().get_active_tasks(user_id)
+    st.write(f'Total tasks: {len(tasks)}')
 
     def refresh_tasks():
         st.session_state.refresh_active = True
@@ -131,6 +132,7 @@ def render_completed_tasks():
     st.header('Completed Tasks')
     user_id = st.session_state.user.get('email')
     tasks = get_task_service().get_completed_tasks(user_id)
+    st.write(f'Total tasks: {len(tasks)}')
 
     def refresh_tasks():
         st.session_state.refresh_completed = True
@@ -141,6 +143,7 @@ def render_deleted_tasks():
     st.header('Deleted Tasks')
     user_id = st.session_state.user.get('email')
     tasks = get_task_service().get_deleted_tasks(user_id)
+    st.write(f'Total tasks: {len(tasks)}')
 
     def refresh_tasks():
         st.session_state.refresh_deleted = True

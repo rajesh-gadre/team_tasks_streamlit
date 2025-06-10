@@ -2,6 +2,7 @@ import sys
 from pathlib import Path
 from types import SimpleNamespace, ModuleType
 sys.modules.setdefault('streamlit', ModuleType('streamlit'))
+sys.modules['streamlit'].write = lambda *a, **k: None
 sys.modules['streamlit'].session_state = {}
 
 def _dummy_dialog(*a, **k):
@@ -64,12 +65,14 @@ def test_call_openai(monkeypatch):
     monkeypatch.setattr(executor, '_first_call', lambda sp, ui, tl: 'content')
     tc = TaskChanges(new_tasks=[], modified_tasks=[])
     monkeypatch.setattr(executor, '_second_call', lambda c1: tc)
-    monkeypatch.setattr(executor, '_LlmExecutor__third_call', lambda uid, r: 'done')
+    monkeypatch.setattr(executor, '_third_call', lambda uid, r: 'done')
+    monkeypatch.setattr('ai.llm_executor.LangChainTracer', lambda: SimpleNamespace())
     result = executor.execute('user', 'prompt', 'input', {}, 'chat1')
     assert result == 'done'
 
 def test_process_chat_records_prompt(monkeypatch):
     monkeypatch.setenv('OPENAI_API_KEY', 'test-key')
+    monkeypatch.setattr('ai.llm_executor.LangChainTracer', lambda: SimpleNamespace())
     captured = {}
 
     def create(coll, data):

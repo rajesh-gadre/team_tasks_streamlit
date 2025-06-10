@@ -4,6 +4,7 @@ from types import SimpleNamespace, ModuleType
 root = Path(__file__).resolve().parents[1]
 sys.path.append(str(root))
 sys.modules.setdefault('streamlit', ModuleType('streamlit'))
+sys.modules['streamlit'].write = lambda *a, **k: None
 
 class Bag(dict):
 
