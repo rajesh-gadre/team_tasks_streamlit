@@ -3,6 +3,7 @@ from datetime import datetime
 from typing import Dict, Optional, Any
 from src.database.models import Task
 from src.tasks.task_service import get_task_service
+from src.users.user_service import get_user_service
 
 def render_task_form(task: Optional[Task]=None):
     task_service = get_task_service()
@@ -27,6 +28,10 @@ def render_task_form(task: Optional[Task]=None):
                     due_date_value = None
         due_date = st.date_input('Due Date', value=due_date_value if due_date_value else None)
         notes = st.text_area('Notes', value=task.notes if task else '')
+        users = get_user_service().get_users()
+        opts = {u.get('userName') or u['userEmail']: u['userEmail'] for u in users}
+        default_label = next((k for k, v in opts.items() if v == st.session_state.user.get('email')), '')
+        assign_label = st.selectbox('Assign To', list(opts.keys()), index=list(opts.keys()).index(default_label) if default_label in opts else 0)
         cols = st.columns([1, 1])
         with cols[0]:
             submit_button = st.form_submit_button('Save Task')
@@ -36,7 +41,7 @@ def render_task_form(task: Optional[Task]=None):
         if not title:
             st.error('Title is required')
             return
-        user_id = st.session_state.user.get('email')
+        user_id = opts.get(assign_label, st.session_state.user.get('email'))
         due_date_value = None
         if due_date and due_date != datetime.today().date():
             due_date_value = datetime.combine(due_date, datetime.min.time())

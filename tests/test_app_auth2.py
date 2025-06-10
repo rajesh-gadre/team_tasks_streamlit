@@ -34,7 +34,7 @@ def _stop():
     calls.setdefault('stop', True)
     raise Stop()
 st.stop = _stop
-st.user = SimpleNamespace(is_logged_in=False, id=None, email=None, name=None)
+st.user = SimpleNamespace(is_logged_in=False, id=None, email=None, name=None, sub=None, picture=None)
 
 sys.modules['streamlit'] = st
 
@@ -53,6 +53,7 @@ def test_not_logged_in(monkeypatch):
 def test_logged_in(monkeypatch):
     st.user.is_logged_in = True
     st.user.id = '1'
+    st.user.sub = '1'
     st.user.email = 'e'
     st.user.name = 'n'
     calls.clear()
