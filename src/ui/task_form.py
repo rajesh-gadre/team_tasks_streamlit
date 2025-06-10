@@ -40,7 +40,8 @@ def render_task_form(task: Optional[Task]=None):
         due_date_value = None
         if due_date and due_date != datetime.today().date():
             due_date_value = datetime.combine(due_date, datetime.min.time())
-        task_data = {'title': title, 'description': description if description else None, 'due_date': due_date_value, 'notes': notes if notes else None}
+        user = st.session_state.user
+        task_data = {'title': title, 'description': description if description else None, 'due_date': due_date_value, 'notes': notes if notes else None, 'owner_id': user.get('userId', user.get('email')), 'owner_email': user.get('email'), 'owner_name': user.get('name')}
         if task:
             if task_service.update_task(user_id, task.id, task_data):
                 st.success('Task updated successfully!')

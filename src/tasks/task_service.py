@@ -1,5 +1,5 @@
 import logging
-from datetime import datetime
+from datetime import datetime, timedelta
 from typing import Dict, List, Optional, Any
 from src.database.models import Task, TaskStatus
 from src.tasks.task_repository import get_task_repository
@@ -36,7 +36,8 @@ class TaskService:
 
     def create_task(self, user_id: str, task_data: Dict[str, Any]) -> str:
         logger.info(f'Creating task for user {user_id}')
-        task = Task(user_id=user_id, title=task_data.get('title'), description=task_data.get('description'), due_date=task_data.get('due_date'), notes=task_data.get('notes'))
+        due_date = task_data.get('due_date') or datetime.now() + timedelta(days=7)
+        task = Task(user_id=user_id, title=task_data.get('title'), description=task_data.get('description'), due_date=due_date, notes=task_data.get('notes'), owner_id=task_data.get('owner_id', user_id), owner_email=task_data.get('owner_email'), owner_name=task_data.get('owner_name'))
         task.updates = [{'timestamp': datetime.now(), 'user': user_id, 'updateText': 'Task created'}]
         return self.repository.create_task(task)
 
@@ -66,6 +67,10 @@ class TaskService:
     def complete_task(self, user_id: str, task_id: str) -> bool:
         logger.info(f'Completing task {task_id} for user {user_id}')
         return self.repository.complete_task(user_id, task_id)
+
+    def assign_tasks(self, task_ids: List[str], new_user_id: str) -> bool:
+        logger.info(f'Assigning tasks {task_ids} to user {new_user_id}')
+        return self.repository.assign_tasks(task_ids, new_user_id)
 _task_service: Optional[TaskService] = None
 
 def get_task_service() -> TaskService:

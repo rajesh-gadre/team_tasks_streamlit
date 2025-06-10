@@ -154,6 +154,20 @@ class TaskRepository:
         except Exception as e:
             logger.error(f'Error completing task {task_id}: {str(e)}')
             raise
+
+    def assign_tasks(self, task_ids: List[str], new_user_id: str) -> bool:
+        try:
+            for task_id in task_ids:
+                task_data = self.db.read(self.collection, task_id)
+                if not task_data:
+                    continue
+                updates = task_data.get('updates') or []
+                update_entry = {'timestamp': datetime.now(), 'user': new_user_id, 'updateText': 'Task assigned'}
+                self.db.update(self.collection, task_id, {'userId': new_user_id, 'updates': updates + [update_entry]})
+            return True
+        except Exception as e:
+            logger.error(f'Error assigning tasks: {str(e)}')
+            raise
 _task_repository: Optional[TaskRepository] = None
 
 def get_task_repository() -> TaskRepository:
