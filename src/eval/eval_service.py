@@ -3,6 +3,7 @@ import logging
 from typing import List, Optional
 from langchain_core.messages import SystemMessage, HumanMessage
 from langchain_openai import ChatOpenAI
+from langchain.callbacks.tracers import LangChainTracer
 from src.eval.eval_result_repository import get_eval_result_repository
 from src.ai.prompt_repository import get_prompt_repository
 from src.database.models import AIEvalInput, AIEvalResult
@@ -20,7 +21,8 @@ class EvalService:
         prompt = self.prompt_repo.get_prompt_by_name_version(prompt_name, version)
         if not prompt:
             raise ValueError(f'Prompt {prompt_name} v{version} not found')
-        chat = ChatOpenAI(api_key=self.api_key, model=self.model, temperature=0)
+        tracer = LangChainTracer()
+        chat = ChatOpenAI(api_key=self.api_key, model=self.model, temperature=0, callbacks=[tracer])
         result_ids = []
         for ev in eval_inputs:
             messages = [SystemMessage(content=prompt.text), HumanMessage(content=ev.input_text)]

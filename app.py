@@ -15,6 +15,11 @@ logger = logging.getLogger(__name__)
 st.set_page_config(page_title='Task Management System', page_icon='✅', layout='wide', initial_sidebar_state='expanded')
 init_session()
 
+import langsmith
+# NOTE: langsmith.init() does not exist in the current version of the langsmith package.
+# Langsmith tracing is enabled via environment variables (LANGCHAIN_TRACING_V2, LANGCHAIN_API_KEY, LANGCHAIN_PROJECT).
+# No explicit initialization is required here.
+
 
 def main():
     if not st.user.is_logged_in:
