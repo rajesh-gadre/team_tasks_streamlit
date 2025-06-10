@@ -7,6 +7,7 @@ A Streamlit-based task management application with soft-delete functionality and
 - Task management (create, read, update, delete)
 - Soft-delete functionality with task recovery
 - Task categorization (Active, Completed, Deleted)
+- Tag support with search
 - Google OAuth Authentication
 - AI Assistant for task-related queries
 - Firebase Firestore integration

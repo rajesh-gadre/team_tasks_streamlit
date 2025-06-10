@@ -5,6 +5,7 @@ from src.groups.user_group_service import get_user_group_service
 from src.tasks.task_service import get_task_service
 from src.utils.time_utils import format_user_tz
 from src.utils.sort_utils import sort_group_tasks
+from src.utils.filter_utils import filter_tasks_by_tags
 
 
 def _get_group_tasks(status: str) -> List[Tuple[str, Task]]:
@@ -28,6 +29,8 @@ def _render_group_task_list(tasks: List[Tuple[str, Task]], status: str):
         st.info(f'No {status.lower()} tasks found.')
         return
     user_id = st.session_state.user.get('email')
+    tag_query = st.text_input('Search Tags', key=f'gtags_{status}')
+    tasks = filter_tasks_by_tags(tasks, tag_query)
     if status == TaskStatus.ACTIVE:
         sort_opts = ['Group', 'Title', 'Due Date']
     elif status == TaskStatus.COMPLETED:

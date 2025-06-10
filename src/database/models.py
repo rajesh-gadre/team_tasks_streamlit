@@ -13,7 +13,7 @@ class PromptStatus(str, Enum):
 
 class Task:
 
-    def __init__(self, id: Optional[str]=None, user_id: str=None, title: str=None, description: str=None, due_date: Optional[datetime]=None, status: str=TaskStatus.ACTIVE, created_at: Optional[datetime]=None, updated_at: Optional[datetime]=None, completion_date: Optional[datetime]=None, deletion_date: Optional[datetime]=None, notes: str=None, updates: List[Dict[str, Any]]=None, owner_id: Optional[str]=None, owner_email: Optional[str]=None, owner_name: Optional[str]=None):
+    def __init__(self, id: Optional[str]=None, user_id: str=None, title: str=None, description: str=None, due_date: Optional[datetime]=None, status: str=TaskStatus.ACTIVE, created_at: Optional[datetime]=None, updated_at: Optional[datetime]=None, completion_date: Optional[datetime]=None, deletion_date: Optional[datetime]=None, notes: str=None, updates: List[Dict[str, Any]]=None, owner_id: Optional[str]=None, owner_email: Optional[str]=None, owner_name: Optional[str]=None, tags: Optional[List[str]]=None):
         self.id = id
         self.user_id = user_id
         self.title = title
@@ -29,10 +29,11 @@ class Task:
         self.owner_id = owner_id
         self.owner_email = owner_email
         self.owner_name = owner_name
+        self.tags = tags or []
 
     @classmethod
     def from_dict(cls, data: Dict[str, Any]) -> 'Task':
-        return cls(id=data.get('id'), user_id=data.get('userId'), title=data.get('title'), description=data.get('description'), due_date=data.get('dueDate'), status=data.get('status', TaskStatus.ACTIVE), created_at=data.get('createdAt'), updated_at=data.get('updatedAt'), completion_date=data.get('completionDate'), deletion_date=data.get('deletionDate'), notes=data.get('notes'), updates=data.get('updates', []), owner_id=data.get('ownerId'), owner_email=data.get('ownerEmail'), owner_name=data.get('ownerName'))
+        return cls(id=data.get('id'), user_id=data.get('userId'), title=data.get('title'), description=data.get('description'), due_date=data.get('dueDate'), status=data.get('status', TaskStatus.ACTIVE), created_at=data.get('createdAt'), updated_at=data.get('updatedAt'), completion_date=data.get('completionDate'), deletion_date=data.get('deletionDate'), notes=data.get('notes'), updates=data.get('updates', []), owner_id=data.get('ownerId'), owner_email=data.get('ownerEmail'), owner_name=data.get('ownerName'), tags=data.get('tags', []))
 
     def to_dict(self) -> Dict[str, Any]:
         data = {'userId': self.user_id, 'title': self.title, 'status': self.status}
@@ -56,6 +57,8 @@ class Task:
             data['ownerEmail'] = self.owner_email
         if self.owner_name:
             data['ownerName'] = self.owner_name
+        if self.tags:
+            data['tags'] = self.tags
         return data
 
     def validate(self) -> bool:
