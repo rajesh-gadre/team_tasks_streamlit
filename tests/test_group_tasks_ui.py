@@ -10,15 +10,7 @@ st = ModuleType('streamlit')
 st.header = lambda *a, **k: None
 captured = {}
 st.write = lambda *a, **k: None
-
-def selectbox(label, opts, index=0):
-    if label == 'Group' and len(opts) > 1:
-        return opts[1]
-    if label == 'Status' and len(opts) > 1:
-        return opts[1]
-    return opts[index] if len(opts) > index else ''
-
-st.selectbox = selectbox
+st.info = lambda *a, **k: None
 
 class SessionState(dict):
     def __getattr__(self, name):
@@ -47,9 +39,8 @@ def test_render_group_tasks(monkeypatch):
     monkeypatch.setattr(gt, 'get_user_group_service', lambda: ug_service)
     monkeypatch.setattr(gt, 'get_task_service', lambda: SimpleNamespace(get_all_tasks=lambda: tasks))
     outputs = {}
-    monkeypatch.setattr(gt, 'render_task_list', lambda ts, status: outputs.setdefault('data', (ts, status)))
-    captured.clear()
-    gt.render_group_tasks()
+    monkeypatch.setattr(gt, '_render_group_task_list', lambda ts, status: outputs.setdefault('data', (ts, status)))
+    gt.render_group_tasks(gt.TaskStatus.COMPLETED)
     ts, status = outputs['data']
     assert status == gt.TaskStatus.COMPLETED
-    assert [t.title for t in ts] == ['B']
+    assert ts == [('G', tasks[1])]

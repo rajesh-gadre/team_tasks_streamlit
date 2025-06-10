@@ -42,7 +42,9 @@ def test_render_my_tasks_page(monkeypatch):
 
 
 def test_render_group_tasks_page(monkeypatch):
-    monkeypatch.setattr(tasks_page, 'render_group_tasks', lambda: None)
+    monkeypatch.setattr(tasks_page, 'render_group_active_tasks', lambda: None)
+    monkeypatch.setattr(tasks_page, 'render_group_completed_tasks', lambda: None)
+    monkeypatch.setattr(tasks_page, 'render_group_deleted_tasks', lambda: None)
     tabs_called.clear()
     tasks_page.render_group_tasks_page()
-    assert tabs_called and tabs_called[0] == ['Group Tasks']
+    assert tabs_called and tabs_called[0] == ['Active Tasks', 'Completed Tasks', 'Deleted Tasks']
