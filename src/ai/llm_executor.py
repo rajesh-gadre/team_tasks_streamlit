@@ -1,3 +1,4 @@
+import os
 import json
 import logging
 import traceback
@@ -23,17 +24,16 @@ class LlmExecutor:
         with spinner('Processing your request...'):
             content1 = self._first_call(system_prompt, user_input, task_list)
             resp = self._second_call(content1)
-            final_response = self._third_call(user_id, resp)
+            final_response = self.__third_call(user_id, resp)
         return final_response
 
     def _first_call(self, system_prompt: str, user_input: str, task_list: Dict[str, Any]) -> str:
         try:
-            tracer = LangChainTracer()
-            chat = ChatOpenAI(api_key=self.service.api_key, model=self.service.model, temperature=0.7, callbacks=[tracer])
+            chat = ChatOpenAI(api_key=self.service.api_key, model=self.service.model, temperature=0.7)
             clean_input = user_input.strip()
             active_tasks_str = json.dumps(task_list.get('active', []), indent=2, cls=FirestoreEncoder)
             completed_tasks_str = json.dumps(task_list.get('completed', []), indent=2, cls=FirestoreEncoder)
-            full_prompt = system_prompt + '\nActive Tasks:\n' + active_tasks_str + '\nCompleted Tasks:\n' + completed_tasks_str
+            full_prompt = f"{system_prompt}\n\nCurrent active tasks:\n{active_tasks_str}\nCompleted tasks:\n{completed_tasks_str}\nBased on the user's request, determine what changes need to be made to the task list.\nList each change separately."
             messages = [SystemMessage(content=full_prompt), HumanMessage(content=clean_input)]
             logger.debug('\n\n\nCalling OpenAI with structured output schema PYDANTIC-H tool')
             response = chat.invoke(messages)
@@ -47,8 +47,7 @@ class LlmExecutor:
         logger.debug(f'Entering _second_call. Received content1:\n{content1}')
         system_prompt = 'You are an AI assistant that processes a list of task descriptions and structures them into new and modified tasks. Strictly adhere to the provided Pydantic model for the output format. Ensure all required fields are present for each task. The input text is a list of proposed changes.'
         try:
-            tracer = LangChainTracer()
-            chat = ChatOpenAI(api_key=self.service.api_key, model=self.service.model, temperature=0.2, callbacks=[tracer])
+            chat = ChatOpenAI(api_key=self.service.api_key, model=self.service.model, temperature=0.2)
             messages = [SystemMessage(content=system_prompt), HumanMessage(content=content1)]
             response = chat.with_structured_output(TaskChanges).invoke(messages)
             logger.debug(f'Successfully structured output in _second_call: {response}')
@@ -83,3 +82,6 @@ class LlmExecutor:
         except Exception as e:
             logger.error(f'THIRD CALL: Error updating tasks - {str(e)}')
             return None
+
+    def __third_call(self, user_id: str, resp: TaskChanges) -> TaskChanges:
+        return self._third_call(user_id, resp)

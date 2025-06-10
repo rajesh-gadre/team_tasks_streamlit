@@ -21,8 +21,7 @@ class EvalService:
         prompt = self.prompt_repo.get_prompt_by_name_version(prompt_name, version)
         if not prompt:
             raise ValueError(f'Prompt {prompt_name} v{version} not found')
-        tracer = LangChainTracer()
-        chat = ChatOpenAI(api_key=self.api_key, model=self.model, temperature=0, callbacks=[tracer])
+        chat = ChatOpenAI(api_key=self.api_key, model=self.model, temperature=0)
         result_ids = []
         for ev in eval_inputs:
             messages = [SystemMessage(content=prompt.text), HumanMessage(content=ev.input_text)]
