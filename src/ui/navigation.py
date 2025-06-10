@@ -2,7 +2,7 @@ import streamlit as st
 from enum import Enum
 import logging
 import pandas as pd
-from src.ui.tasks_page import render_tasks_page
+from src.ui.tasks_page import render_my_tasks_page, render_group_tasks_page
 from src.ui.ai_chat import render_ai_chat
 from src.ui.settings import render_settings
 from src.ui.system_management import render_system_management
@@ -17,7 +17,8 @@ from src.auth.session import logout_user as session_logout_user
 logger = logging.getLogger(__name__)
 
 class Page(str, Enum):
-    TASKS = 'Tasks'
+    MY_TASKS = 'My Tasks'
+    GROUP_TASKS = 'Group Tasks'
     AI = 'AI Assistant'
     LOGIN = 'Login'
 
@@ -25,7 +26,7 @@ def set_page(page: Page):
     st.session_state.current_page = page
 
 def get_current_page() -> Page:
-    return st.session_state.get('current_page', Page.TASKS)
+    return st.session_state.get('current_page', Page.MY_TASKS)
 
 def render_login_page(auth, AUTH_TYPE):
     st.title('Welcome to TASK MANAGEMENT SYSTEM')
@@ -72,8 +73,12 @@ def evals_page():
 def settings_page():
     render_settings()
 
-def tasks_page():
-    render_tasks_page()
+def my_tasks_page():
+    render_my_tasks_page()
+
+
+def group_tasks_page():
+    render_group_tasks_page()
 
 def debug_session_state():
     session_items = {}
@@ -166,7 +171,8 @@ def danger_zone_page():
         _delete_ai_chats_tab()
 
 def render_main_page():
-    tasks_nav = st.Page(tasks_page, title='Tasks', icon='✅', default=True)
+    my_tasks_nav = st.Page(my_tasks_page, title='My Tasks', icon='✅', default=True)
+    group_tasks_nav = st.Page(group_tasks_page, title='Group Tasks', icon='👥')
     ai_page = st.Page(ai_assistant_page, title='AI Assistant', icon='🤖')
     settings_nav = st.Page(settings_page, title='Settings', icon='⚙️')
     system_nav = st.Page(system_management_page, title='System Management', icon='🛠️')
@@ -175,7 +181,7 @@ def render_main_page():
     danger_zone_nav = st.Page(danger_zone_page, title='Danger Zone', icon='💣')
 
     ai_pages = [ai_page]
-    user_pages = [ai_page,tasks_nav, settings_nav]
+    user_pages = [ai_page, my_tasks_nav, group_tasks_nav, settings_nav]
     navigation_pages = [settings_nav]
     admin_pages = [system_nav, evals_nav, view_tables_nav, danger_zone_nav]
     page = st.navigation({ #'============= 🧑\u200d💼 AI': ai_pages,
