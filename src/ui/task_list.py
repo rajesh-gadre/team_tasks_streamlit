@@ -7,6 +7,7 @@ from src.database.models import Task, TaskStatus
 from src.tasks.task_service import get_task_service
 from src.utils.time_utils import format_user_tz
 from src.utils.sort_utils import sort_tasks
+from src.utils.filter_utils import filter_tasks_by_tags
 
 def render_task_list(tasks: List[Task], status: str, on_refresh: Callable=None):
     print(f"\n\n****{status=}\n\n")
@@ -121,6 +122,8 @@ def render_active_tasks():
         st.rerun()
     user_id = st.session_state.user.get('email')
     tasks = get_task_service().get_active_tasks(user_id)
+    tag_query = st.text_input('Search Tags', key='tags_active')
+    tasks = filter_tasks_by_tags(tasks, tag_query)
     st.write(f'Total tasks: {len(tasks)}')
 
     def refresh_tasks():
@@ -132,6 +135,8 @@ def render_completed_tasks():
     st.header('Completed Tasks')
     user_id = st.session_state.user.get('email')
     tasks = get_task_service().get_completed_tasks(user_id)
+    tag_query = st.text_input('Search Tags', key='tags_completed')
+    tasks = filter_tasks_by_tags(tasks, tag_query)
     st.write(f'Total tasks: {len(tasks)}')
 
     def refresh_tasks():
@@ -143,6 +148,8 @@ def render_deleted_tasks():
     st.header('Deleted Tasks')
     user_id = st.session_state.user.get('email')
     tasks = get_task_service().get_deleted_tasks(user_id)
+    tag_query = st.text_input('Search Tags', key='tags_deleted')
+    tasks = filter_tasks_by_tags(tasks, tag_query)
     st.write(f'Total tasks: {len(tasks)}')
 
     def refresh_tasks():

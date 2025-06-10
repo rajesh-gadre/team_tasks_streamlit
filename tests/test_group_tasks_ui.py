@@ -11,6 +11,7 @@ st.header = lambda *a, **k: None
 captured = {}
 st.write = lambda *a, **k: None
 st.info = lambda *a, **k: None
+st.text_input = lambda *a, **k: ''
 
 class SessionState(dict):
     def __getattr__(self, name):

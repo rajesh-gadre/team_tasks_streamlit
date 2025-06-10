@@ -27,6 +27,8 @@ def render_task_form(task: Optional[Task]=None):
                 except ValueError:
                     due_date_value = None
         due_date = st.date_input('Due Date', value=due_date_value if due_date_value else None)
+        tags_str = ', '.join(task.tags) if task and task.tags else ''
+        tags_input = st.text_input('Tags (comma separated)', value=tags_str)
         notes = st.text_area('Notes', value=task.notes if task else '')
         users = get_user_service().get_users()
         opts = {u.get('userName') or u['userEmail']: u['userEmail'] for u in users}
@@ -46,7 +48,8 @@ def render_task_form(task: Optional[Task]=None):
         if due_date and due_date != datetime.today().date():
             due_date_value = datetime.combine(due_date, datetime.min.time())
         user = st.session_state.user
-        task_data = {'title': title, 'description': description if description else None, 'due_date': due_date_value, 'notes': notes if notes else None, 'owner_id': user.get('userId', user.get('email')), 'owner_email': user.get('email'), 'owner_name': user.get('name')}
+        tags = [t.strip() for t in tags_input.split(',') if t.strip()]
+        task_data = {'title': title, 'description': description if description else None, 'due_date': due_date_value, 'notes': notes if notes else None, 'owner_id': user.get('userId', user.get('email')), 'owner_email': user.get('email'), 'owner_name': user.get('name'), 'tags': tags}
         if task:
             if task_service.update_task(user_id, task.id, task_data):
                 st.success('Task updated successfully!')

@@ -13,7 +13,7 @@ def _setup_service(monkeypatch):
 def test_create_task(monkeypatch):
     service, repo = _setup_service(monkeypatch)
     repo.create_task.return_value = 'tid'
-    data = {'title': 'Test', 'description': 'desc', 'notes': 'n', 'due_date': '2024-01-01'}
+    data = {'title': 'Test', 'description': 'desc', 'notes': 'n', 'due_date': '2024-01-01', 'tags': ['a']}
     result = service.create_task('u1', data)
     assert result == 'tid'
     repo.create_task.assert_called_once()
@@ -22,11 +22,12 @@ def test_create_task(monkeypatch):
     assert created.title == 'Test'
     assert created.description == 'desc'
     assert created.notes == 'n'
+    assert created.tags == ['a']
 
 def test_update_task(monkeypatch):
     service, repo = _setup_service(monkeypatch)
-    service.update_task('u1', 't1', {'title': 'new', 'due_date': '2024-01-02'})
-    repo.update_task.assert_called_once_with('u1', 't1', {'title': 'new', 'dueDate': '2024-01-02'})
+    service.update_task('u1', 't1', {'title': 'new', 'due_date': '2024-01-02', 'tags': ['x']})
+    repo.update_task.assert_called_once_with('u1', 't1', {'title': 'new', 'dueDate': '2024-01-02', 'tags': ['x']})
 
 def test_delete_restore_complete(monkeypatch):
     service, repo = _setup_service(monkeypatch)

@@ -37,7 +37,7 @@ class TaskService:
     def create_task(self, user_id: str, task_data: Dict[str, Any]) -> str:
         logger.info(f'Creating task for user {user_id}')
         due_date = task_data.get('due_date') or datetime.now() + timedelta(days=7)
-        task = Task(user_id=user_id, title=task_data.get('title'), description=task_data.get('description'), due_date=due_date, notes=task_data.get('notes'), owner_id=task_data.get('owner_id', user_id), owner_email=task_data.get('owner_email'), owner_name=task_data.get('owner_name'))
+        task = Task(user_id=user_id, title=task_data.get('title'), description=task_data.get('description'), due_date=due_date, notes=task_data.get('notes'), owner_id=task_data.get('owner_id', user_id), owner_email=task_data.get('owner_email'), owner_name=task_data.get('owner_name'), tags=task_data.get('tags'))
         task.updates = [{'timestamp': datetime.now(), 'user': user_id, 'updateText': 'Task created'}]
         return self.repository.create_task(task)
 
@@ -54,6 +54,8 @@ class TaskService:
             db_task_data['notes'] = task_data['notes']
         if 'status' in task_data:
             db_task_data['status'] = task_data['status']
+        if 'tags' in task_data:
+            db_task_data['tags'] = task_data['tags']
         return self.repository.update_task(user_id, task_id, db_task_data)
 
     def delete_task(self, user_id: str, task_id: str) -> bool:
