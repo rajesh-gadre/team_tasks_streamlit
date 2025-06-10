@@ -25,7 +25,7 @@ def main():
         st.logout()
         session_logout_user()
         st.stop()
-    user_info = {'id': st.user.id, 'email': st.user.email, 'name': st.user.name}
+    user_info = {'id': st.user.sub, 'email': st.user.email, 'name': st.user.name, 'picture': st.user.picture}
     if st.session_state.user != user_info:
         login_user(user_info)
     render_sidebar()
