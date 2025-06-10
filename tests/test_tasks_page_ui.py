@@ -36,6 +36,7 @@ def test_render_tasks_page(monkeypatch):
     monkeypatch.setattr(tasks_page, 'render_completed_tasks', lambda: None)
     monkeypatch.setattr(tasks_page, 'render_deleted_tasks', lambda: None)
     monkeypatch.setattr(tasks_page, 'render_task_form', lambda *a, **k: None)
+    monkeypatch.setattr(tasks_page, 'render_group_tasks', lambda: None)
     tabs_called.clear()
     tasks_page.render_tasks_page()
-    assert tabs_called and tabs_called[0] == ['Active Tasks', 'Completed Tasks', 'Deleted Tasks']
+    assert tabs_called and tabs_called[0] == ['Active Tasks', 'Completed Tasks', 'Deleted Tasks', 'Group Tasks']
