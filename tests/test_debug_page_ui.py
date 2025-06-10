@@ -44,6 +44,7 @@ sys.modules['streamlit'] = st
 pd = ModuleType('pandas')
 pd.DataFrame = lambda data=None: data
 sys.modules['pandas'] = pd
+sys.modules.pop('src.ui.navigation', None)
 import src.ui.navigation as navigation
 
 def test_debug_page_tabs_and_delete(monkeypatch):

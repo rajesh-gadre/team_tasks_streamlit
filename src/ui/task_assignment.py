@@ -1,12 +1,13 @@
 import streamlit as st
 from src.tasks.task_service import get_task_service
 from src.users.user_service import get_user_service
+from src.database.models import TaskStatus
 
 
 def render_task_assignment():
     st.header('Assign Tasks')
     ts = get_task_service()
-    tasks = ts.get_all_tasks()
+    tasks = [t for t in ts.get_all_tasks() if t.status == TaskStatus.ACTIVE]
     users = get_user_service().get_users()
     task_opts = {f"{t.title} ({t.user_id})": t.id for t in tasks}
     selected_labels = st.multiselect('Tasks', list(task_opts.keys()))
