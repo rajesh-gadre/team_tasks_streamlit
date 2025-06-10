@@ -4,17 +4,13 @@ import logging
 import pandas as pd
 from src.ui.tasks_page import render_tasks_page
 from src.ui.ai_chat import render_ai_chat
-from src.ui.prompt_management import render_prompt_management
-from src.ui.group_management import render_group_management
-from src.ui.task_assignment import render_task_assignment
 from src.ui.settings import render_settings
-from src.ui.summary import render_summary
-from src.ui.changelog import render_changelog
+from src.ui.system_management import render_system_management
+from src.ui.evals_page import render_evals
 from src.ai.chat_service import delete_all_chats_one_by_one, get_all_chats
 from src.tasks.task_service import get_task_service
 from src.ai.prompt_repository import get_prompt_repository
 from src.eval.debug_data import get_eval_inputs, get_eval_results
-from src.ui.run_tests import render_run_tests
 from src.database.firestore import get_client
 logger = logging.getLogger(__name__)
 
@@ -61,34 +57,14 @@ def render_sidebar():
 def ai_assistant_page():
     render_ai_chat()
 
-def prompt_management_page():
-    render_prompt_management()
+def system_management_page():
+    render_system_management()
 
-def group_management_page():
-    render_group_management()
-
-def task_assignment_page():
-    render_task_assignment()
+def evals_page():
+    render_evals()
 
 def settings_page():
     render_settings()
-
-def summary_page():
-    render_summary()
-
-def changelog_page():
-    render_changelog()
-
-def eval_candidates_page():
-    from src.ui.eval_candidates import render_eval_candidates
-    render_eval_candidates()
-
-def run_evals_page():
-    from src.ui.run_evals import render_run_evals
-    render_run_evals()
-
-def run_tests_page():
-    render_run_tests()
 
 def tasks_page():
     render_tasks_page()
@@ -173,20 +149,14 @@ def debug_page():
 def render_main_page():
     tasks_nav = st.Page(tasks_page, title='Tasks', icon='✅', default=True)
     ai_page = st.Page(ai_assistant_page, title='AI Assistant', icon='🤖')
-    prompt_page = st.Page(prompt_management_page, title='Prompt Management', icon='📝')
-    group_page = st.Page(group_management_page, title='Group Management', icon='👥')
-    assignment_page = st.Page(task_assignment_page, title='Assign Tasks', icon='📌')
     settings_nav = st.Page(settings_page, title='Settings', icon='⚙️')
-    summary_nav = st.Page(summary_page, title='Summary', icon='📋')
-    changelog_nav = st.Page(changelog_page, title='ChangeLog', icon='📜')
-    run_tests_nav = st.Page(run_tests_page, title='Run Tests', icon='🧪')
-    eval_candidates_nav = st.Page(eval_candidates_page, title='Eval Candidates', icon='🧪')
-    run_evals_nav = st.Page(run_evals_page, title='Run Evals', icon='⚙️')
+    system_nav = st.Page(system_management_page, title='System Management', icon='🛠️')
+    evals_nav = st.Page(evals_page, title='Evals', icon='🧪')
     debug_page_nav = st.Page(debug_page, title='Debug', icon='🐞')
 
     ai_pages = [ai_page]
     user_pages = [tasks_nav]
-    navigation_pages = [settings_nav, summary_nav, changelog_nav, run_tests_nav]
-    admin_pages = [prompt_page, group_page, assignment_page, eval_candidates_nav, run_evals_nav, debug_page_nav]
+    navigation_pages = [settings_nav]
+    admin_pages = [system_nav, evals_nav, debug_page_nav]
     page = st.navigation({'============= 🧑\u200d💼 AI': ai_pages,'============= 🧑\u200d💼 User': user_pages, '============= 🧭 Nav': navigation_pages, '============= 🛠️ Admin': admin_pages})
     page.run()

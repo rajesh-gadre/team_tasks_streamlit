@@ -9,7 +9,10 @@ st = ModuleType('streamlit')
 nav = ModuleType('src.ui.navigation')
 nav.render_main_page = lambda: None
 nav.render_sidebar = lambda: None
+import src
+import src.ui
 sys.modules['src.ui.navigation'] = nav
+src.ui.navigation = nav
 db = ModuleType('src.database.firestore')
 db.get_client = lambda: None
 sys.modules['src.database.firestore'] = db
@@ -39,6 +42,8 @@ st.user = SimpleNamespace(is_logged_in=False, id=None, email=None, name=None, su
 sys.modules['streamlit'] = st
 
 import app_auth2
+del sys.modules['src.ui.navigation']
+delattr(src.ui, 'navigation')
 
 
 def test_not_logged_in(monkeypatch):

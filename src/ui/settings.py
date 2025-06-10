@@ -2,9 +2,10 @@ import streamlit as st
 from zoneinfo import available_timezones
 from src.users.user_service import get_user_service
 from src.groups.user_group_service import get_user_group_service
+from src.ui.changelog import render_changelog
+from src.ui.run_tests import render_run_tests
 
-def render_settings():
-    st.header('Settings')
+def _user_settings_tab():
     user = st.session_state.user or {}
     st.write(f"Name: {user.get('name','')}")
     st.write(f"Email: {user.get('email','')}")
@@ -19,3 +20,12 @@ def render_settings():
             st.session_state.userTZ = value
             st.success('Saved')
 
+def render_settings():
+    st.title('Settings')
+    tabs = st.tabs(['Settings', 'ChangeLog', 'Run Tests'])
+    with tabs[0]:
+        _user_settings_tab()
+    with tabs[1]:
+        render_changelog()
+    with tabs[2]:
+        render_run_tests()
