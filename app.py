@@ -21,7 +21,7 @@ def main():
         if st.button('Log in'):
             st.login()
         st.stop()
-    if st.button('Logout'):
+    if st.sidebar.button('Logout'):
         st.logout()
         session_logout_user()
         st.stop()

@@ -66,7 +66,7 @@ completed_page = st.Page(completed_tasks_page, title="Completed Tasks", icon="�
 deleted_page = st.Page(deleted_tasks_page, title="Deleted Tasks", icon="🗑️")
 ai_page = st.Page(ai_assistant_page, title="AI Assistant", icon="🤖")
 view_tables_nav = st.Page(view_tables_page, title="View Tables", icon="🐞")
-danger_zone_nav = st.Page(danger_zone_page, title="Danger Zone", icon="🐞")
+danger_zone_nav = st.Page(danger_zone_page, title="Danger Zone", icon="💣")
 
 # Create navigation
 page = st.navigation([active_page, completed_page, deleted_page, ai_page, view_tables_nav, danger_zone_nav])

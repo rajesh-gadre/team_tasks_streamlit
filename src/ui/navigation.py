@@ -12,6 +12,8 @@ from src.tasks.task_service import get_task_service
 from src.ai.prompt_repository import get_prompt_repository
 from src.eval.debug_data import get_eval_inputs, get_eval_results
 from src.database.firestore import get_client
+from src.auth.session import logout_user as session_logout_user
+
 logger = logging.getLogger(__name__)
 
 class Page(str, Enum):
@@ -46,6 +48,10 @@ def render_sidebar():
                 st.image(user['picture'], width=100)
             if st.button('🔄 Refresh Page', key='refresh_page_button'):
                 st.rerun()
+            if st.button('Logout', key='logout_button'):
+                st.logout()
+                session_logout_user()
+                st.stop()
         else:
             st.write('Please log in to access your tasks.')
             if st.button('Login with Google', key='login_button_with_google_navigation'):
@@ -166,11 +172,14 @@ def render_main_page():
     system_nav = st.Page(system_management_page, title='System Management', icon='🛠️')
     evals_nav = st.Page(evals_page, title='Evals', icon='🧪')
     view_tables_nav = st.Page(view_tables_page, title='View Tables', icon='🐞')
-    danger_zone_nav = st.Page(danger_zone_page, title='Danger Zone', icon='🐞')
+    danger_zone_nav = st.Page(danger_zone_page, title='Danger Zone', icon='💣')
 
     ai_pages = [ai_page]
-    user_pages = [tasks_nav]
+    user_pages = [ai_page,tasks_nav, settings_nav]
     navigation_pages = [settings_nav]
     admin_pages = [system_nav, evals_nav, view_tables_nav, danger_zone_nav]
-    page = st.navigation({'============= 🧑\u200d💼 AI': ai_pages,'============= 🧑\u200d💼 User': user_pages, '============= 🧭 Nav': navigation_pages, '============= 🛠️ Admin': admin_pages})
+    page = st.navigation({ #'============= 🧑\u200d💼 AI': ai_pages,
+    '============= 🧑\u200d💼 User': user_pages, 
+    #'============= 🧭 Nav': navigation_pages, 
+    '============= 👑 Admin': admin_pages})
     page.run()
