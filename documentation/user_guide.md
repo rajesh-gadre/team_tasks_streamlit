@@ -34,8 +34,8 @@ The sidebar displays:
 
 The navigation menu contains grouped sections:
 - **🧑‍💼 User**: Active Tasks, Completed Tasks, Deleted Tasks, AI Assistant
-- **🧭 Nav**: Summary, ChangeLog
-- **🛠️ Admin**: Prompt Management, Eval Candidates, Run Evals, Debug
+- **🧭 Nav**: Settings
+- **🛠️ Admin**: System Management, Evals, Debug
 
 ## 4. Managing Tasks
 

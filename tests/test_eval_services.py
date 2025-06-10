@@ -9,6 +9,9 @@ sys.path.append(str(root_dir))
 sys.path.append(str(root_dir / 'src'))
 lc_core = ModuleType('langchain_core')
 lc_core.messages = ModuleType('messages')
+lc_core.env = ModuleType('env')
+lc_core.env.get_runtime_environment = lambda: {}
+lc_core.__path__ = []
 
 class _Msg:
 
@@ -16,8 +19,10 @@ class _Msg:
         self.content = content
 lc_core.messages.SystemMessage = _Msg
 lc_core.messages.HumanMessage = _Msg
+lc_core.messages.AIMessage = _Msg
 sys.modules['langchain_core'] = lc_core
 sys.modules['langchain_core.messages'] = lc_core.messages
+sys.modules['langchain_core.env'] = lc_core.env
 lc_openai = ModuleType('langchain_openai')
 
 class DummyChat:
@@ -41,7 +46,13 @@ def _setup_eval_service(monkeypatch):
     monkeypatch.setattr('src.eval.eval_service.get_eval_result_repository', lambda: repo)
     monkeypatch.setattr('src.eval.eval_service.get_prompt_repository', lambda: prompt_repo)
     monkeypatch.setenv('OPENAI_API_KEY', 'k')
-    return (EvalService(), repo, prompt_repo)
+    monkeypatch.setenv('LANGCHAIN_TRACING_V2', 'false')
+    monkeypatch.setenv('LANGCHAIN_ENDPOINT', '')
+    monkeypatch.setenv('LANGCHAIN_API_KEY', '')
+    sys.modules['langchain_core.messages'].AIMessage = _Msg
+    service = EvalService()
+    monkeypatch.setattr('src.eval.eval_service.ChatOpenAI', DummyChat)
+    return (service, repo, prompt_repo)
 
 def _setup_input_service(monkeypatch):
     repo = MagicMock()
