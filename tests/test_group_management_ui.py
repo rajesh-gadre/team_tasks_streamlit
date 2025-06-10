@@ -7,6 +7,8 @@ sys.path.append(str(root))
 sys.path.append(str(root / 'src'))
 
 st = ModuleType('streamlit')
+st.write = lambda *a, **k: None
+
 
 class Tab:
     def __enter__(self):

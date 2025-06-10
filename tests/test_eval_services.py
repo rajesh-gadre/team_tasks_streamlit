@@ -47,8 +47,10 @@ def _setup_eval_service(monkeypatch):
     monkeypatch.setattr('src.eval.eval_service.get_prompt_repository', lambda: prompt_repo)
     monkeypatch.setenv('OPENAI_API_KEY', 'k')
     monkeypatch.setenv('LANGCHAIN_TRACING_V2', 'false')
-    monkeypatch.setenv('LANGCHAIN_ENDPOINT', '')
-    monkeypatch.setenv('LANGCHAIN_API_KEY', '')
+    monkeypatch.setenv('LANGCHAIN_ENDPOINT', 'http://localhost')
+    monkeypatch.setenv('LANGCHAIN_API_KEY', 'x')
+    monkeypatch.setattr('src.ai.llm_executor.LangChainTracer', lambda: SimpleNamespace())
+    monkeypatch.setattr('src.eval.eval_service.LangChainTracer', lambda: SimpleNamespace())
     sys.modules['langchain_core.messages'].AIMessage = _Msg
     service = EvalService()
     monkeypatch.setattr('src.eval.eval_service.ChatOpenAI', DummyChat)

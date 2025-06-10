@@ -116,6 +116,7 @@ def _render_group_task_list(tasks: List[Tuple[str, Task]], status: str):
 
 def render_group_tasks(status: str):
     tasks = _get_group_tasks(status)
+    st.write(f'Total tasks: {len(tasks)}')
     _render_group_task_list(tasks, status)
 
 

@@ -3,6 +3,7 @@ from pathlib import Path
 sys.path.append(str(Path(__file__).resolve().parents[1]))
 import types
 sys.modules.setdefault('streamlit', types.ModuleType('streamlit'))
+sys.modules['streamlit'].write = lambda *a, **k: None
 sys.modules['streamlit'].session_state = {}
 from src.auth.google_auth import get_google_auth
 

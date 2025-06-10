@@ -8,6 +8,7 @@ sys.path.append(str(root / 'src'))
 
 st = ModuleType('streamlit')
 st.header = lambda *a, **k: None
+st.write = lambda *a, **k: None
 captured = {}
 def _multiselect(label, opts):
     captured['opts'] = opts

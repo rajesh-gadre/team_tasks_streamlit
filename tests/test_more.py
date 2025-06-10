@@ -63,7 +63,7 @@ def test_executor_third_call(monkeypatch):
     monkeypatch.setattr('ai.llm_executor.get_task_service', lambda: DummyTS())
     executor = LlmExecutor(SimpleNamespace())
     changes = TaskChanges(new_tasks=[NewTask(title='x')], modified_tasks=[ModifiedTask(id='m', title='y')])
-    executor._LlmExecutor__third_call('u1', changes)
+    executor._third_call('u1', changes)
     assert calls['c'][0][0] == 'u1'
     assert calls['u'][0] == ('u1', 'm', {'title': 'y'})
 
@@ -71,19 +71,19 @@ def test_first_call_builds_prompt(monkeypatch):
     record = {}
 
     class DummyChat:
-
-        def __init__(self, api_key=None, model=None, temperature=None):
+        def __init__(self, api_key=None, model=None, temperature=None, **kw):
             record['init'] = (api_key, model, temperature)
 
         def invoke(self, messages):
             record['messages'] = messages
             return SimpleNamespace(content='ok')
     monkeypatch.setattr('ai.llm_executor.ChatOpenAI', DummyChat)
+    monkeypatch.setattr('ai.llm_executor.LangChainTracer', lambda: SimpleNamespace())
     executor = LlmExecutor(SimpleNamespace(api_key='k', model='m'))
     result = executor._first_call('S', ' hi ', {'active': [], 'completed': []})
     assert result == 'ok'
     assert record['init'] == ('k', 'm', 0.7)
-    assert 'Current active tasks' in record['messages'][0].content
+    assert 'Active Tasks' in record['messages'][0].content
 
 def test_firestore_encoder(monkeypatch):
 
