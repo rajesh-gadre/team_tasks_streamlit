@@ -83,7 +83,7 @@ def test_first_call_builds_prompt(monkeypatch):
     result = executor._first_call('S', ' hi ', {'active': [], 'completed': []})
     assert result == 'ok'
     assert record['init'] == ('k', 'm', 0.7)
-    assert 'Active Tasks' in record['messages'][0].content
+    assert 'active tasks' in record['messages'][0].content
 
 def test_firestore_encoder(monkeypatch):
 
