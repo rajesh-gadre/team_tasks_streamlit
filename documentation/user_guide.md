@@ -53,15 +53,14 @@ Each task is displayed in an expandable container showing:
 
 ### 4.2 Creating a New Task
 
-1. Navigate to the "Active Tasks" tab
-2. Click the "Add New Task" button
-3. Fill in the task form:
+1. Navigate to the "Add Task" tab
+2. Fill in the task form:
    - **Title** (required): A short, descriptive name for your task
    - **Description** (optional): Detailed information about the task
    - **Due Date** (optional): When the task needs to be completed
    - **Notes** (optional): Any additional information or context
-4. Click "Save Task" to create the task
-5. Click "Cancel" to discard the new task
+3. Click "Save Task" to create the task
+4. Click "Cancel" to discard the new task
 
 ### 4.3 Editing a Task
 

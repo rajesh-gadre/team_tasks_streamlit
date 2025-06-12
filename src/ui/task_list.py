@@ -117,9 +117,6 @@ def render_task_list(tasks: List[Task], status: str, on_refresh: Callable=None):
 
 def render_active_tasks():
     st.header('Active Tasks')
-    if st.button('Add New Task', key='add_new_task'):
-        st.session_state.adding_task = True
-        st.rerun()
     user_id = st.session_state.user.get('email')
     tasks = get_task_service().get_active_tasks(user_id)
     tag_query = st.text_input('Search Tags', key='tags_active')
