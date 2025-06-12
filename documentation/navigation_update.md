@@ -28,10 +28,11 @@ Each page is defined using `st.Page()` with a function reference and passed to `
 
 ```python
 # Define page functions for navigation
+def add_task_page():
+    render_task_form()
+
 def active_tasks_page():
-    if st.session_state.get('adding_task'):
-        render_task_form()
-    elif st.session_state.get('editing_task'):
+    if st.session_state.get('editing_task'):
         render_task_form(st.session_state.editing_task)
     else:
         render_active_tasks()
@@ -61,6 +62,7 @@ def danger_zone_page():
     st.button("Delete AI Chats")
 
 # Define pages for navigation
+add_page = st.Page(add_task_page, title="Add Task", icon="➕")
 active_page = st.Page(active_tasks_page, title="Active Tasks", icon="✅", default=True)
 completed_page = st.Page(completed_tasks_page, title="Completed Tasks", icon="✨")
 deleted_page = st.Page(deleted_tasks_page, title="Deleted Tasks", icon="🗑️")
@@ -69,7 +71,7 @@ view_tables_nav = st.Page(view_tables_page, title="View Tables", icon="🐞")
 danger_zone_nav = st.Page(danger_zone_page, title="Danger Zone", icon="💣")
 
 # Create navigation
-page = st.navigation([active_page, completed_page, deleted_page, ai_page, view_tables_nav, danger_zone_nav])
+page = st.navigation([add_page, active_page, completed_page, deleted_page, ai_page, view_tables_nav, danger_zone_nav])
 
 # Run the selected page
 page.run()

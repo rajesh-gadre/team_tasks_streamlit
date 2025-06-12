@@ -62,14 +62,10 @@ def render_task_form(task: Optional[Task]=None):
             task_id = task_service.create_task(user_id, task_data)
             if task_id:
                 st.success('Task created successfully!')
-                if 'adding_task' in st.session_state:
-                    del st.session_state.adding_task
                 st.rerun()
             else:
                 st.error('Failed to create task')
     if cancel_button:
         if 'editing_task' in st.session_state:
             del st.session_state.editing_task
-        if 'adding_task' in st.session_state:
-            del st.session_state.adding_task
         st.rerun()

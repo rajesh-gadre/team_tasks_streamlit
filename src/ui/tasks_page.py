@@ -14,17 +14,17 @@ from src.ui.group_tasks import (
 
 def render_my_tasks_page():
     st.title('My Tasks')
-    tabs = st.tabs(['Active Tasks', 'Completed Tasks', 'Deleted Tasks'])
+    tabs = st.tabs(['Add Task', 'Active Tasks', 'Completed Tasks', 'Deleted Tasks'])
     with tabs[0]:
-        if st.session_state.get('adding_task'):
-            render_task_form()
-        elif st.session_state.get('editing_task'):
+        render_task_form()
+    with tabs[1]:
+        if st.session_state.get('editing_task'):
             render_task_form(st.session_state.editing_task)
         else:
             render_active_tasks()
-    with tabs[1]:
-        render_completed_tasks()
     with tabs[2]:
+        render_completed_tasks()
+    with tabs[3]:
         render_deleted_tasks()
 
 
